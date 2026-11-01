@@ -3,8 +3,9 @@ import logging
 
 from pipeline.loading.postgres import connect_postgres, create_schemas
 from pipeline.logging_config import log_summary, setup_logging
-from pipeline.pipelines.programs import run_programs_pipeline
-from pipeline.pipelines.students import run_students_pipeline
+from pipeline.pipelines.academic_performance import run_academic_performance_pipeline
+from pipeline.pipelines.programs import run_program_pipeline
+from pipeline.pipelines.students import run_student_pipeline
 
 logger = logging.getLogger(__name__)
 
@@ -20,8 +21,9 @@ def main() -> None:
         with connect_postgres() as conn:
             create_schemas(conn)
 
-            summary["programs"] = run_programs_pipeline(conn)
-            summary["students"] = run_students_pipeline(conn)
+            summary["programs"] = run_program_pipeline(conn)
+            summary["students"] = run_student_pipeline(conn)
+            summary["academic_performance"] = run_academic_performance_pipeline(conn)
 
         log_summary(summary)
 

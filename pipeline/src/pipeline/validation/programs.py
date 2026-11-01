@@ -1,10 +1,9 @@
-from pipeline.config import RAW_PROGRAMS_PATH
 from pipeline.validation.validate import is_blank
 import polars as pl
 
 from pipeline.validation.validate import validate_data
 
-_REQUIRED_PROGRAMS_COLUMNS = [
+_REQUIRED_PROGRAM_COLUMNS = [
     "program_id",
     "program_name_vi",
     "program_name_en",
@@ -13,10 +12,10 @@ _REQUIRED_PROGRAMS_COLUMNS = [
     "first_cohort_year",
     "last_cohort_year",
 ]
+
 _VALID_PROGRAM_TYPES = ["Standard", "EP", "POHE", "CLC", "TT"]
 
-
-_PROGRAMS_RULES: dict[str, pl.Expr] = {
+_PROGRAM_RULES: dict[str, pl.Expr] = {
     "missing_program_id": is_blank("program_id"),
     "duplicate_program_id": pl.col("program_id").is_duplicated(),
     "missing_program_name_vi": is_blank("program_name_vi"),
@@ -42,6 +41,6 @@ def validate_programs(
 ) -> tuple[pl.LazyFrame, pl.LazyFrame]:
     return validate_data(
         lf,
-        _REQUIRED_PROGRAMS_COLUMNS,
-        _PROGRAMS_RULES,
+        _REQUIRED_PROGRAM_COLUMNS,
+        _PROGRAM_RULES,
     )

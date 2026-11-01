@@ -13,7 +13,7 @@ from pipeline.config import (
 )
 
 
-def run_programs_pipeline(
+def run_program_pipeline(
     conn: psycopg.Connection, path: Path = RAW_PROGRAMS_PATH
 ) -> PipelineLogs:
     return run_pipeline(
