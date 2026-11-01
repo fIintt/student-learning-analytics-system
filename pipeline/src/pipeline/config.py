@@ -3,8 +3,11 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
+# Roots
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+REPO_ROOT = PROJECT_ROOT.parent
 
-load_dotenv()
+load_dotenv(REPO_ROOT / ".env")
 
 
 def require_env(name: str) -> str:
@@ -23,9 +26,7 @@ DB_HOST = require_env("DB_HOST")
 DB_PORT = int(os.getenv("DB_PORT", "5432"))
 DB_NAME = require_env("DB_NAME")
 
-# Path
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
-
+# Paths
 RAW_DIR = PROJECT_ROOT / "data" / "raw"
 REJECTED_DIR = PROJECT_ROOT / "data" / "rejected"
 SCHEMA_DIR = PROJECT_ROOT / "sql" / "schemas"
