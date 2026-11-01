@@ -1,8 +1,8 @@
 from pipeline.config import RAW_PROGRAMS_PATH
-from pipeline.utils import is_blank
+from pipeline.validation.validate import is_blank
 import polars as pl
 
-from pipeline.utils import validate_data
+from pipeline.validation.validate import validate_data
 
 _REQUIRED_STUDENTS_COLUMNS = [
     "student_id",

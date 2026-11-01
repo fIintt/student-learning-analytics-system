@@ -1,20 +1,8 @@
-import hashlib
 import polars as pl
-from pathlib import Path
 
 
 def is_blank(col: str) -> pl.Expr:
     return pl.col(col).is_null() | (pl.col(col).str.strip_chars() == "")
-
-
-def hash_file(path: Path, chunk_size: int = 1 << 20) -> str:
-    sha256 = hashlib.sha256()
-
-    with path.open("rb") as file:
-        for chunk in iter(lambda: file.read(chunk_size), b""):
-            sha256.update(chunk)
-
-    return sha256.hexdigest()
 
 
 def validate_data(

@@ -11,6 +11,7 @@ dependencies = [
     "polars>=2.1.0",
     "psycopg[binary]>=3.3.6",
     "python-dotenv>=1.2.4",
+    "rich>=15.0.0",
 ]
 
 [project.scripts]
