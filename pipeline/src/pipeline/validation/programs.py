@@ -13,7 +13,7 @@ _REQUIRED_PROGRAMS_COLUMNS = [
     "first_cohort_year",
     "last_cohort_year",
 ]
-_VALID_PROGRAM_TYPES = ["Standard", "Advanced (EP)", "POHE", "CLC", "TT"]
+_VALID_PROGRAM_TYPES = ["Standard", "EP", "POHE", "CLC", "TT"]
 
 
 _PROGRAMS_RULES: dict[str, pl.Expr] = {

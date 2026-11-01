@@ -61,10 +61,7 @@ def run_programs_pipeline(
                 f"loaded={loaded_rejected_count}"
             )
 
-        with connect_postgres() as conn:
-            create_schemas(conn)
-
-            loaded = load_programs(conn, valid_df)
+        loaded = load_programs(conn, valid_df)
 
         skipped = valid - loaded
 
