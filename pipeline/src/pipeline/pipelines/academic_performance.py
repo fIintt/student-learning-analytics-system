@@ -26,7 +26,7 @@ def run_academic_performance_pipeline(
         logger.warning("Students table is empty")
 
     return run_pipeline(
-        name="students",
+        name="academic_performance",
         conn=conn,
         path=path,
         rejected_path=REJECTED_ACADEMIC_PERFORMANCE_PATH,

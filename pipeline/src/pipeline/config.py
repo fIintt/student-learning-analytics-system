@@ -23,7 +23,7 @@ def require_env(name: str) -> str:
 DB_USER = require_env("DB_USER")
 DB_PASSWORD = require_env("DB_PASSWORD")
 DB_HOST = require_env("DB_HOST")
-DB_PORT = int(os.getenv("DB_PORT", "5432"))
+DB_PORT = int(require_env("DB_PORT"))
 DB_NAME = require_env("DB_NAME")
 
 # Paths

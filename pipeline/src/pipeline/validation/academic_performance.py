@@ -41,7 +41,7 @@ def _build_academic_performance_rules(
         ).fill_null(False),
         "credits_mismatch": (
             pl.col("passed_credits") + pl.col("failed_credits")
-            != pl.col("registered_credits")
+            > pl.col("registered_credits")
         ).fill_null(False),
         "missing_semester_gpa": pl.col("semester_gpa").is_null(),
         "missing_cumulative_gpa": pl.col("cumulative_gpa").is_null(),

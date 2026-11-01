@@ -15,22 +15,16 @@ def main() -> None:
 
     logger.info("Starting...")
 
-    try:
-        summary = {}
+    summary = {}
 
-        with connect_postgres() as conn:
-            create_schemas(conn)
+    with connect_postgres() as conn:
+        create_schemas(conn)
 
-            summary["programs"] = run_program_pipeline(conn)
-            summary["students"] = run_student_pipeline(conn)
-            summary["academic_performance"] = run_academic_performance_pipeline(conn)
+        summary["programs"] = run_program_pipeline(conn)
+        summary["students"] = run_student_pipeline(conn)
+        summary["academic_performance"] = run_academic_performance_pipeline(conn)
 
-        log_summary(summary)
-
-    except Exception:
-        logger.exception("Pipeline failed")
-
-        raise
+    log_summary(summary)
 
     logger.info("All pipelines finished")
 

@@ -15,5 +15,5 @@ def transform_students(lf: pl.LazyFrame) -> pl.LazyFrame:
               .alias("cohort"),
         )
         .with_columns(pl.col(pl.String).replace("", None))
-        .unique()
+        .unique(maintain_order=True)
     )

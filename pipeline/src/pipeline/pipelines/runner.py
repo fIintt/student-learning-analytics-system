@@ -21,7 +21,7 @@ def run_pipeline(
     validate: Callable[[pl.LazyFrame], tuple[pl.LazyFrame, pl.LazyFrame]],
     load: Callable[[psycopg.Connection, pl.DataFrame], int],
 ) -> PipelineLogs:
-    logger = logging.getLogger(f"pipelines.{name}")
+    logger = logging.getLogger(f"pipeline.{name}")
 
     started_at = time.perf_counter()
 
@@ -60,7 +60,7 @@ def run_pipeline(
         loaded = load(conn, valid_df)
 
         skipped = valid - loaded
-        elasped = time.perf_counter() - started_at
+        elapsed = time.perf_counter() - started_at
 
         return {
             "read": read,
@@ -68,7 +68,7 @@ def run_pipeline(
             "rejected": rejected_count,
             "skipped": skipped,
             "loaded": loaded,
-            "elapsed": elasped,
+            "elapsed": elapsed,
         }
 
     except KeyError, ValueError, TypeError:
