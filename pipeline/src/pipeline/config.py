@@ -29,6 +29,7 @@ DB_NAME = require_env("DB_NAME")
 # Paths
 RAW_DIR = PROJECT_ROOT / "data" / "raw"
 REJECTED_DIR = PROJECT_ROOT / "data" / "rejected"
+PROCESSED_DIR = PROJECT_ROOT / "data" / "processed"
 SCHEMA_DIR = PROJECT_ROOT / "sql" / "schemas"
 
 RAW_STUDENTS_PATH = RAW_DIR / "students.csv"
@@ -38,3 +39,7 @@ RAW_ACADEMIC_PERFORMANCE_PATH = RAW_DIR / "academic_performance.csv"
 REJECTED_STUDENTS_PATH = REJECTED_DIR / "students"
 REJECTED_PROGRAMS_PATH = REJECTED_DIR / "programs"
 REJECTED_ACADEMIC_PERFORMANCE_PATH = REJECTED_DIR / "academic_performance"
+
+PROCESSED_STUDENTS_PATH = PROCESSED_DIR / "students"
+PROCESSED_PROGRAMS_PATH = PROCESSED_DIR / "programs"
+PROCESSED_ACADEMIC_PERFORMANCE_PATH = PROCESSED_DIR / "academic_performance"

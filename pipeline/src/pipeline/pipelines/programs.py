@@ -8,6 +8,7 @@ from pipeline.validation.programs import validate_programs
 import psycopg
 
 from pipeline.config import (
+    PROCESSED_PROGRAMS_PATH,
     RAW_PROGRAMS_PATH,
     REJECTED_PROGRAMS_PATH,
 )
@@ -21,6 +22,7 @@ def run_program_pipeline(
         conn=conn,
         path=path,
         rejected_path=REJECTED_PROGRAMS_PATH,
+        processed_path=PROCESSED_PROGRAMS_PATH,
         transform=transform_programs,
         validate=validate_programs,
         load=load_programs,

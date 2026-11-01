@@ -8,7 +8,7 @@ import polars as pl
 import psycopg
 
 from pipeline.ingestion.extract import extract_csv, hash_file
-from pipeline.loading.parquet import load_rejected_data
+from pipeline.loading.parquet import load_processed_data, load_rejected_data
 
 
 def run_pipeline(
@@ -17,6 +17,7 @@ def run_pipeline(
     conn: psycopg.Connection,
     path: Path,
     rejected_path: Path,
+    processed_path: Path,
     transform: Callable[[pl.LazyFrame], pl.LazyFrame],
     validate: Callable[[pl.LazyFrame], tuple[pl.LazyFrame, pl.LazyFrame]],
     load: Callable[[psycopg.Connection, pl.DataFrame], int],
@@ -38,13 +39,13 @@ def run_pipeline(
 
         read = read_df.item()
         duplicates_dropped = read - deduped_df.item()
-        valid = valid_df.height
+        validated_count = valid_df.height
         rejected_count = rejected_df.height
 
-        if read != duplicates_dropped + rejected_count + valid:
+        if read != duplicates_dropped + rejected_count + validated_count:
             raise ValueError(
                 f"Counts do not add up: read={read} duplicates={duplicates_dropped} "
-                f"rejected={rejected_count} valid={valid}"
+                f"rejected={rejected_count} valid={validated_count}"
             )
 
         loaded_rejected_count = load_rejected_data(
@@ -57,9 +58,19 @@ def run_pipeline(
                 f"expected={rejected_count} loaded={loaded_rejected_count}"
             )
 
+        loaded_processed_count = load_processed_data(
+            valid_df, processed_path, source_file_hash
+        )
+
+        if loaded_processed_count != validated_count:
+            raise ValueError(
+                f"Processed row persistence mismatch: "
+                f"expected={validated_count} loaded={loaded_processed_count}"
+            )
+
         loaded = load(conn, valid_df)
 
-        skipped = valid - loaded
+        skipped = validated_count - loaded
         elapsed = time.perf_counter() - started_at
 
         return {

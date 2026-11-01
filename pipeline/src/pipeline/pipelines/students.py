@@ -9,7 +9,11 @@ from pipeline.transformation.students import transform_students
 from pipeline.validation.students import validate_students
 import psycopg
 
-from pipeline.config import RAW_STUDENTS_PATH, REJECTED_STUDENTS_PATH
+from pipeline.config import (
+    PROCESSED_STUDENTS_PATH,
+    RAW_STUDENTS_PATH,
+    REJECTED_STUDENTS_PATH,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +32,7 @@ def run_student_pipeline(
         conn=conn,
         path=path,
         rejected_path=REJECTED_STUDENTS_PATH,
+        processed_path=PROCESSED_STUDENTS_PATH,
         transform=transform_students,
         validate=partial(validate_students, valid_program_ids=program_ids),
         load=load_students,
