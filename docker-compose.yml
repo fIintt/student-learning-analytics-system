@@ -1,0 +1,13 @@
+pipeline:
+  build: ./pipeline
+  profiles: ["etl"]
+  env_file: .env
+  environment:
+    DB_HOST: db
+    DB_PORT: "5432"
+  depends_on:
+    db:
+      condition: service_healthy
+  volumes:
+    - ./pipeline/data/raw:/app/data/raw:ro
+    - ./pipeline/data/rejected:/app/data/rejected
