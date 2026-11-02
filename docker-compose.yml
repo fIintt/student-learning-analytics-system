@@ -1,13 +1,22 @@
-pipeline:
-  build: ./pipeline
-  profiles: ["etl"]
-  env_file: .env
-  environment:
-    DB_HOST: db
-    DB_PORT: "5432"
-  depends_on:
-    db:
-      condition: service_healthy
-  volumes:
-    - ./pipeline/data/raw:/app/data/raw:ro
-    - ./pipeline/data/rejected:/app/data/rejected
+services:
+  db:
+    image: postgres:16
+    container_name: m11-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      # Cổng 5433 trên máy bạn, để không đụng PostgreSQL cài sẵn ở 5432.
+      - "${DB_PORT}:5432"
+    volumes:
+      - m11_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  m11_pgdata:
