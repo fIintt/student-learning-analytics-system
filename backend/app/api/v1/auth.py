@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.core.security import get_current_user
 from app.db.session import get_db
 from app.models import User
-from app.schemas.auth import LoginRequest, LoginResponse, MeResponse
+from app.schemas.auth import ChangePasswordRequest, LoginRequest, LoginResponse, MeResponse
 from app.services import auth_service
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -18,3 +18,9 @@ def login(body: LoginRequest, db: Session = Depends(get_db)):
 @router.get("/me", response_model=MeResponse)
 def me(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     return auth_service.me(db, user)
+
+
+@router.post("/change-password", status_code=204)
+def change_password(body: ChangePasswordRequest, user: User = Depends(get_current_user),
+                    db: Session = Depends(get_db)) -> None:
+    auth_service.change_password(db, user, body.current_password, body.new_password)

@@ -1,4 +1,3 @@
-import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -9,19 +8,11 @@ from app.core.errors import register_exception_handlers
 from app.db.session import SessionLocal, init_db
 from app.services import group_service
 
-logger = logging.getLogger(__name__)
-
-
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
-    try:
-        init_db()
-        with SessionLocal() as db:
-            group_service.sync_groups(db)  # nhóm mới cho chương trình × khoá mà pipeline vừa nạp
-    except RuntimeError as exc:
-        logger.warning(
-            "Khởi động không đầy đủ: %s — Các API cần dữ liệu pipeline sẽ trả lỗi.", exc
-        )
+    init_db()
+    with SessionLocal() as db:
+        group_service.sync_groups(db)  # nhóm mới cho chương trình × khoá mà pipeline vừa nạp
     yield
 
 

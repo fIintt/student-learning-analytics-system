@@ -4,7 +4,6 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.core.permissions import require_roles
-from app.core.security import get_current_user
 from app.db.session import get_db
 from app.models import CaseStatus, Role, User
 from app.schemas.common import Page
@@ -22,7 +21,7 @@ def list_cases(
     learner_id: str | None = None,
     assigned_to: int | None = None,
     params: PageParams = Depends(page_params),
-    user: User = Depends(get_current_user),
+    user: User = Depends(staff),
     db: Session = Depends(get_db),
 ):
     items, total = case_service.list_cases(db, user, params, status_filter, learner_id, assigned_to)
@@ -30,7 +29,7 @@ def list_cases(
 
 
 @router.get("/{case_id}", response_model=SupportCaseDetailOut)
-def get_case(case_id: int, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+def get_case(case_id: int, user: User = Depends(staff), db: Session = Depends(get_db)):
     return case_service.case_to_dict(case_service.get_case_for_user(db, user, case_id), with_followups=True)
 
 

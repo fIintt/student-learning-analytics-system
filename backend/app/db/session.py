@@ -56,6 +56,7 @@ def init_db(bind: Engine = engine) -> None:
         conn.execute(text("SELECT pg_advisory_xact_lock(110011002)"))
         conn.execute(text("ALTER TABLE metric_results ADD COLUMN IF NOT EXISTS revision INTEGER NOT NULL DEFAULT 1"))
         conn.execute(text("ALTER TABLE metric_results ADD COLUMN IF NOT EXISTS source_hash VARCHAR(64)"))
+        conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS token_version INTEGER NOT NULL DEFAULT 0"))
         conn.execute(text("ALTER TABLE metric_results DROP CONSTRAINT IF EXISTS uq_metric_result_term"))
         conn.execute(text("""
             DO $$ BEGIN

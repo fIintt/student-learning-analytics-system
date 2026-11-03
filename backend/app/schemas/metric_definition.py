@@ -1,6 +1,7 @@
+import math
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, StringConstraints
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints, field_validator
 
 from app.models import FormulaType, MetricStatus
 from app.schemas.common import ORMModel, UtcDatetime
@@ -31,6 +32,13 @@ FORMULA_PARAMS_MODELS: dict[FormulaType, type[BaseModel]] = {
 class Threshold(_Strict):
     operator: Literal["<", "<=", ">", ">=", "=="]
     value: float
+
+    @field_validator("value")
+    @classmethod
+    def value_must_be_finite(cls, value: float) -> float:
+        if not math.isfinite(value):
+            raise ValueError("phải là số hữu hạn")
+        return value
 
 
 # --- Request / response ----------------------------------------------------------------

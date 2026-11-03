@@ -60,6 +60,17 @@ def get_or_404(db: Session, definition_id: int) -> MetricDefinition:
     return definition
 
 
+def get_for_update(db: Session, definition_id: int) -> MetricDefinition:
+    definition = db.scalar(
+        select(MetricDefinition)
+        .where(MetricDefinition.id == definition_id)
+        .with_for_update()
+    )
+    if definition is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Không tìm thấy công thức chỉ số")
+    return definition
+
+
 def list_definitions(db: Session, params: PageParams, status_filter: MetricStatus | None,
                      code: str | None) -> tuple[list[MetricDefinition], int]:
     stmt = select(MetricDefinition).order_by(MetricDefinition.code, MetricDefinition.version.desc())
@@ -96,7 +107,7 @@ def _apply_changes(definition: MetricDefinition, data: MetricDefinitionUpdate) -
 
 
 def update(db: Session, definition_id: int, data: MetricDefinitionUpdate) -> MetricDefinition:
-    definition = get_or_404(db, definition_id)
+    definition = get_for_update(db, definition_id)
     if data.formula_params is not None:
         validate_formula_params(definition.formula_type, data.formula_params)
     if definition.status not in _EDITABLE:
@@ -108,7 +119,7 @@ def update(db: Session, definition_id: int, data: MetricDefinitionUpdate) -> Met
 
 
 def submit(db: Session, definition_id: int) -> MetricDefinition:
-    definition = get_or_404(db, definition_id)
+    definition = get_for_update(db, definition_id)
     if not (definition.purpose or "").strip():
         raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="Phải nêu mục đích sử dụng trước khi gửi duyệt")
     if definition.status != MetricStatus.DRAFT:
@@ -120,14 +131,18 @@ def submit(db: Session, definition_id: int) -> MetricDefinition:
 
 def approve(db: Session, admin: User, definition_id: int, note: str | None = None) -> MetricDefinition:
     definition = get_or_404(db, definition_id)
+    locked_versions = db.scalars(
+        select(MetricDefinition)
+        .where(MetricDefinition.code == definition.code)
+        .order_by(MetricDefinition.id)
+        .with_for_update()
+    ).all()
+    definition = next(version for version in locked_versions if version.id == definition_id)
     if definition.status != MetricStatus.PENDING:
         raise _conflict("Chỉ phê duyệt được công thức đang chờ duyệt")
 
-    previous = db.scalars(select(MetricDefinition).where(
-        MetricDefinition.code == definition.code,
-        MetricDefinition.status == MetricStatus.APPROVED,
-        MetricDefinition.id != definition.id,
-    )).all()
+    previous = [version for version in locked_versions
+                if version.status == MetricStatus.APPROVED and version.id != definition.id]
     for old in previous:
         old.status = MetricStatus.RETIRED
 
@@ -143,7 +158,7 @@ def approve(db: Session, admin: User, definition_id: int, note: str | None = Non
 
 
 def reject(db: Session, admin: User, definition_id: int, note: str) -> MetricDefinition:
-    definition = get_or_404(db, definition_id)
+    definition = get_for_update(db, definition_id)
     if definition.status != MetricStatus.PENDING:
         raise _conflict("Chỉ từ chối được công thức đang chờ duyệt")
     definition.status = MetricStatus.REJECTED
@@ -154,7 +169,7 @@ def reject(db: Session, admin: User, definition_id: int, note: str) -> MetricDef
 
 
 def new_version(db: Session, user: User, definition_id: int, data: MetricDefinitionUpdate) -> MetricDefinition:
-    source = get_or_404(db, definition_id)
+    source = get_for_update(db, definition_id)
     if data.formula_params is not None:
         validate_formula_params(source.formula_type, data.formula_params)
     if source.status != MetricStatus.APPROVED:

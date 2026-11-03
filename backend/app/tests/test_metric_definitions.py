@@ -81,6 +81,13 @@ def test_create_invalid_threshold_or_type_400(client, world, auth):
     assert bad_type.status_code == 400
 
 
+@pytest.mark.parametrize("value", ["NaN", "Infinity", "-Infinity"])
+def test_create_non_finite_threshold_400(client, world, auth, value):
+    res = client.post(BASE, json={**FAILED_RATIO, "threshold": {"operator": ">", "value": value}},
+                      headers=auth["reviewer"])
+    assert res.status_code == 400
+
+
 def test_viewer_cannot_create_but_can_read(client, world, auth):
     d = _create(client, auth["reviewer"])
     assert client.post(BASE, json={**FAILED_RATIO, "code": "X"}, headers=auth["viewer"]).status_code == 403

@@ -27,11 +27,12 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
         return False
 
 
-def create_access_token(user_id: int, role: str) -> str:
+def create_access_token(user_id: int, role: str, token_version: int = 0) -> str:
     now = datetime.now(timezone.utc)
     payload = {
         "sub": str(user_id),
         "role": role,
+        "token_version": token_version,
         "iat": now,
         "exp": now + timedelta(minutes=settings.access_token_expire_minutes),
     }
@@ -65,4 +66,6 @@ def get_current_user(
         raise _unauthorized("Token không hợp lệ")
     if not user.is_active:
         raise _unauthorized("Tài khoản đã bị khoá")
+    if payload.get("token_version") != user.token_version:
+        raise _unauthorized("Token không còn hiệu lực")
     return user

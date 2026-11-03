@@ -31,12 +31,10 @@ def test_viewer_cannot_view_learner_outside_group_via_api(client, world, auth, a
 
     assert client.get(f"/api/v1/reports/learner/{outside.student_id}", headers=headers).status_code == 403
     assert client.get(f"/api/v1/reports/learner/{inside.student_id}", headers=headers).status_code == 200
-    assert client.get(f"/api/v1/review/alerts/{alerts[3].id}", headers=headers).status_code == 403
     for url in ("/api/v1/metrics/results", "/api/v1/review/alerts", "/api/v1/support-cases"):
         assert client.get(url, params={"learner_id": outside.student_id}, headers=headers).status_code == 403
 
-    listed = client.get("/api/v1/review/alerts", headers=headers).json()["items"]
-    assert outside.student_id not in {a["learner"]["id"] for a in listed}
+    assert client.get("/api/v1/review/alerts", headers=headers).status_code == 403
     results = client.get("/api/v1/metrics/results", headers=headers).json()["items"]
     assert outside.student_id not in {r["learner_id"] for r in results}
 

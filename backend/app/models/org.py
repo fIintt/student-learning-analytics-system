@@ -22,6 +22,7 @@ class User(Base):
     hashed_password: Mapped[str] = mapped_column(String(255))
     role: Mapped[Role] = mapped_column(str_enum(Role))
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    token_version: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
 
     groups: Mapped[list["LearnerGroup"]] = relationship(secondary=user_group_access, back_populates="users")
 

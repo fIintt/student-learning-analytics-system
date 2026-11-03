@@ -2,7 +2,6 @@ from fastapi import APIRouter, Body, Depends, Query, status
 from sqlalchemy.orm import Session
 
 from app.core.permissions import require_roles
-from app.core.security import get_current_user
 from app.db.session import get_db
 from app.models import AlertStatus, Role, User
 from app.schemas.common import Page
@@ -20,7 +19,7 @@ def list_alerts(
     learner_id: str | None = None,
     metric_definition_id: int | None = None,
     params: PageParams = Depends(page_params),
-    user: User = Depends(get_current_user),
+    user: User = Depends(staff),
     db: Session = Depends(get_db),
 ):
     items, total = review_service.list_alerts(db, user, params, status_filter, learner_id, metric_definition_id)
@@ -28,7 +27,7 @@ def list_alerts(
 
 
 @router.get("/alerts/{alert_id}", response_model=AlertOut)
-def get_alert(alert_id: int, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+def get_alert(alert_id: int, user: User = Depends(staff), db: Session = Depends(get_db)):
     return review_service.alert_to_dict(review_service.get_alert_for_user(db, user, alert_id))
 
 
