@@ -14,7 +14,7 @@ _REQUIRED_STUDENT_COLUMNS = [
 _VALID_STUDENT_STATUSES = ["studying", "graduated", "suspended"]
 
 
-def _build_student_rules(valid_program_ids: list[str]) -> dict[str, pl.Expr]:
+def _create_student_rules(valid_program_ids: list[str]) -> dict[str, pl.Expr]:
     return {
         "missing_student_id": is_blank("student_id"),
         "invalid_student_id": (
@@ -40,5 +40,5 @@ def validate_students(
     return validate_data(
         lf,
         _REQUIRED_STUDENT_COLUMNS,
-        _build_student_rules(valid_program_ids),
+        _create_student_rules(valid_program_ids),
     )

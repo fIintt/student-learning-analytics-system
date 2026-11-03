@@ -48,6 +48,11 @@ def run_pipeline(
                 f"rejected={rejected_count} valid={validated_count}"
             )
 
+        loaded = load(conn, valid_df)
+
+        skipped = validated_count - loaded
+        elapsed = time.perf_counter() - started_at
+
         loaded_rejected_count = load_rejected_data(
             rejected_df, rejected_path, source_file_hash
         )
@@ -67,11 +72,6 @@ def run_pipeline(
                 f"Processed row persistence mismatch: "
                 f"expected={validated_count} loaded={loaded_processed_count}"
             )
-
-        loaded = load(conn, valid_df)
-
-        skipped = validated_count - loaded
-        elapsed = time.perf_counter() - started_at
 
         return {
             "read": read,
