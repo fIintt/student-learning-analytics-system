@@ -1,7 +1,8 @@
 """Phân quyền theo vai trò và phạm vi nhóm sinh viên.
 
 - admin: thấy mọi sinh viên.
-- reviewer, viewer: chỉ thấy sinh viên thuộc các nhóm được gán trong user_group_access.
+- viewer: chỉ thấy mã sinh viên liên kết với tài khoản, bỏ qua quyền nhóm.
+- reviewer: chỉ thấy sinh viên thuộc các nhóm được gán trong user_group_access.
   Sinh viên thuộc nhóm khi cùng chương trình (program_id) và cùng khoá (cohort) với nhóm đó.
 """
 
@@ -30,6 +31,8 @@ def has_full_access(user: User) -> bool:
 
 def accessible_group_ids(db: Session, user: User) -> list[int]:
     """Danh sách id nhóm user được xem (admin: mọi nhóm)."""
+    if user.role == Role.VIEWER:
+        return []
     if has_full_access(user):
         stmt = select(LearnerGroup.id)
     else:
@@ -41,6 +44,9 @@ def accessible_learner_ids_subquery(user: User):
     """Subquery mã sinh viên trong phạm vi user; None nghĩa là không giới hạn (admin)."""
     if has_full_access(user):
         return None
+    if user.role == Role.VIEWER:
+        stmt = select(Student.student_id)
+        return stmt.where(Student.student_id == user.student_id) if user.student_id else stmt.where(False)
     return (
         select(Student.student_id)
         .join(LearnerGroup, (LearnerGroup.program_id == Student.program_id)

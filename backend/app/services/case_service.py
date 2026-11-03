@@ -98,7 +98,7 @@ def list_cases(db: Session, user: User, params: PageParams, status_filter: CaseS
 def update_case(db: Session, user: User, case_id: int, data: SupportCaseUpdate) -> SupportCase:
     case = get_case_for_user(db, user, case_id)
     if "assigned_to" in data.model_fields_set:
-        validate_assignee(db, data.assigned_to)
+        validate_assignee(db, data.assigned_to, case.learner_id)
     if case.status == CaseStatus.CLOSED:
         raise HTTPException(status.HTTP_409_CONFLICT, detail="Trường hợp đã đóng")
     if data.status is not None and data.status not in _ALLOWED_TRANSITIONS[case.status]:

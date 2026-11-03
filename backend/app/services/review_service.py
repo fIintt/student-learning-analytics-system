@@ -10,11 +10,11 @@ from fastapi import HTTPException, status
 from sqlalchemy import func, select, update
 from sqlalchemy.orm import Session, selectinload
 
-from app.core.permissions import ensure_learner_access, get_learner_or_404, scope_by_learner
-from app.models import Alert, AlertStatus, CaseStatus, MetricResult, Role, SupportCase, User
+from app.core.permissions import can_access_learner, ensure_learner_access, get_learner_or_404, scope_by_learner
+from app.models import Alert, AlertStatus, CaseStatus, LearnerGroup, MetricResult, Role, SupportCase, User
 from app.schemas.support import ConfirmRequest, DismissRequest
 from app.services import audit_service
-from app.services.pagination import PageParams
+from app.services.pagination import PageParams, paginate
 
 
 def learner_brief(student) -> dict:
@@ -78,13 +78,26 @@ def list_alerts(db: Session, user: User, params: PageParams, status_filter: Aler
     return [alert_to_dict(a) for a in alerts], total
 
 
-def validate_assignee(db: Session, user_id: int | None) -> None:
+def list_assignees(db: Session, user: User, learner_id: str, params: PageParams):
+    learner = get_learner_or_404(db, learner_id)
+    ensure_learner_access(db, user, learner_id)
+    stmt = select(User).where(User.is_active, User.role.in_([Role.ADMIN, Role.REVIEWER]),
+                              (User.role == Role.ADMIN) | User.groups.any(
+                                  (LearnerGroup.program_id == learner.program_id)
+                                  & (LearnerGroup.cohort == learner.cohort))).order_by(User.full_name, User.id)
+    return paginate(db, stmt, params)
+
+
+def validate_assignee(db: Session, user_id: int | None, learner_id: str) -> None:
     if user_id is None:
         return
     assignee = db.get(User, user_id)
     if assignee is None or not assignee.is_active or assignee.role not in (Role.ADMIN, Role.REVIEWER):
         raise HTTPException(status.HTTP_400_BAD_REQUEST,
-                            detail="Người được giao phải là tài khoản admin hoặc reviewer đang hoạt động")
+                            detail="Người được giao phải là tài khoản admin hoặc giáo viên đang hoạt động")
+    if not can_access_learner(db, assignee, learner_id):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST,
+                            detail="Người được giao không có quyền truy cập sinh viên này")
 
 
 def _mark_reviewed(db: Session, alert: Alert, user: User, new_status: AlertStatus, note: str) -> datetime:
@@ -112,7 +125,7 @@ def confirm(db: Session, user: User, alert_id: int, data: ConfirmRequest) -> tup
     alert = get_alert_for_user(db, user, alert_id)
     note = _require_text(data.note, "Phải nhập ghi chú khi xác nhận cảnh báo")
     reason = _require_text(data.reason, "Phải nêu lý do cần hỗ trợ khi xác nhận cảnh báo")
-    validate_assignee(db, data.assigned_to)
+    validate_assignee(db, data.assigned_to, alert.learner_id)
     if alert.status != AlertStatus.PENDING_REVIEW:
         raise HTTPException(status.HTTP_409_CONFLICT, detail="Cảnh báo đã được xử lý")
 

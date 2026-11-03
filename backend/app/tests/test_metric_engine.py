@@ -179,7 +179,7 @@ def test_results_scoped_by_group(client, db, world, auth):
     _compute(client, auth, definition.id)
 
     viewer = client.get("/api/v1/metrics/results", headers=auth["viewer"]).json()
-    assert {i["learner_id"] for i in viewer["items"]} == {"HS001", "HS002"}
+    assert {i["learner_id"] for i in viewer["items"]} == {"HS001"}
     assert set(viewer["items"][0]) == {"id", "learner_id", "learner_name", "metric_definition_id", "metric_code",
                                        "metric_version", "academic_year", "semester", "value", "flagged",
                                        "threshold", "computed_at"}

@@ -58,6 +58,8 @@ def test_models_match_pipeline_sql_schemas():
     for sql_file in sorted(SCHEMA_DIR.glob("*.sql")):
         text = sql_file.read_text(encoding="utf-8")
         name = re.search(r"CREATE TABLE IF NOT EXISTS (\w+)", text).group(1)
+        if name not in tables:
+            continue  # bảng pipeline mà backend chưa đọc (staff, accounts)
         columns = set(re.findall(r"^\s{4}(\w+)\s+(?:TEXT|SMALLINT|NUMERIC|INTEGER)", text, flags=re.M))
         inline_pk = set(re.findall(r"^\s{4}(\w+)\s+TEXT PRIMARY KEY", text, flags=re.M))
         table_pk = re.search(r"PRIMARY KEY \(([^)]+)\)", text)

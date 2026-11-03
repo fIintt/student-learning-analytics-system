@@ -14,6 +14,10 @@ class Role(str, enum.Enum):
     REVIEWER = "reviewer"
     VIEWER = "viewer"
 
+    @property
+    def label(self) -> str:
+        return {"admin": "admin", "reviewer": "Giáo viên", "viewer": "Sinh viên"}[self.value]
+
 
 class AcademicStatus(str, enum.Enum):
     STUDYING = "studying"

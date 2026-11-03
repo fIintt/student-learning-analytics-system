@@ -123,12 +123,20 @@ def test_compute_never_creates_support_case(db, alerts):
 
 def test_list_alerts_scoped(client, world, auth, alerts):
     assert client.get(ALERTS, headers=auth["viewer"]).status_code == 403
+    reviewer = client.get(ALERTS, headers=auth["reviewer"]).json()
+    assert reviewer["total"] == 2
+    assert {a["learner"]["id"] for a in reviewer["items"]} == {"HS001", "HS002"}
+    item = reviewer["items"][0]
+    assert item["metric_result"]["metric_code"] == "CUM_GPA"
+    assert item["metric_result"]["threshold"] == {"operator": "<", "value": 2.0}
     assert client.get(ALERTS, headers=auth["admin"]).json()["total"] == 4
 
     client.post(f"{ALERTS}/{alerts[0].id}/dismiss", json={"note": "x"}, headers=auth["reviewer"])
     pending = client.get(ALERTS, params={"status": "pending_review"}, headers=auth["reviewer"]).json()
     assert pending["total"] == 1
 
+    assert client.get(f"{ALERTS}/{alerts[3].id}", headers=auth["reviewer"]).status_code == 403
+    assert client.get(f"{ALERTS}/{alerts[0].id}", headers=auth["reviewer"]).status_code == 200
     assert client.get(f"{ALERTS}/{alerts[0].id}", headers=auth["viewer"]).status_code == 403
     assert client.get(ALERTS, params={"learner_id": world["learners"][3].student_id},
-                      headers=auth["viewer"]).status_code == 403
+                      headers=auth["reviewer"]).status_code == 403

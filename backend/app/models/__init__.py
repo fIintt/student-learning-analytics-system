@@ -11,8 +11,10 @@ from app.models.metric import MetricDefinition, MetricResult
 from app.models.org import LearnerGroup, User, user_group_access
 from app.models.pipeline import AcademicPerformance, Program, Student
 from app.models.support import Alert, AuditLog, Followup, SupportCase
+from app.models.academic_import import AcademicImport, AcademicImportError
 
 __all__ = [
+    "AcademicImport", "AcademicImportError",
     # bảng của pipeline (chỉ đọc)
     "Program", "Student", "AcademicPerformance",
     # bảng của backend

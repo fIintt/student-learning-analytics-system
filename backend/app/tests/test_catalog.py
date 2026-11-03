@@ -16,7 +16,7 @@ def test_groups_scoped_and_counted(client, world, auth):
     assert admin["items"][0] == {"id": world["group_a"].id, "name": "P1-2022", "program_id": "P1",
                                  "program_name": "Chương trình 1", "cohort": 2022, "learner_count": 2}
 
-    for role in ("reviewer", "viewer"):
+    for role in ("reviewer",):
         body = client.get("/api/v1/groups", headers=auth[role]).json()
         assert [g["name"] for g in body["items"]] == ["P1-2022"] and body["total"] == 1
 
@@ -31,7 +31,7 @@ def test_catalog_requires_login(client, world):
 def test_learners_scoped_to_viewer_groups(client, world, auth):
     admin = client.get("/api/v1/learners", headers=auth["admin"]).json()
     assert admin["total"] == 4
-    viewer = client.get("/api/v1/learners", headers=auth["viewer"]).json()
+    viewer = client.get("/api/v1/learners", headers=auth["reviewer"]).json()
     assert [l["id"] for l in viewer["items"]] == ["HS001", "HS002"]
     assert viewer["items"][0] == {"id": "HS001", "full_name": "Học sinh 1", "program_id": "P1",
                                   "program_name": "Chương trình 1", "cohort": 2022, "academic_status": "studying"}
@@ -54,7 +54,7 @@ def test_learners_filters(client, world, auth):
 
 
 def test_learners_group_outside_scope(client, world, auth):
-    res = client.get("/api/v1/learners", params={"group_id": world["group_b"].id}, headers=auth["viewer"])
+    res = client.get("/api/v1/learners", params={"group_id": world["group_b"].id}, headers=auth["reviewer"])
     assert res.status_code == 403
     assert client.get("/api/v1/learners", params={"group_id": 999}, headers=auth["admin"]).status_code == 404
 
@@ -71,7 +71,7 @@ def test_programs_scoped(client, db, world, auth):
     assert [p["id"] for p in admin["items"]] == ["P1", "P2"]
     assert admin["items"][0] == {"id": "P1", "name": "Chương trình 1", "name_en": "Program 1",
                                  "program_type": "Standard", "first_cohort_year": 2020, "last_cohort_year": 2026}
-    viewer = client.get("/api/v1/programs", headers=auth["viewer"]).json()
+    viewer = client.get("/api/v1/programs", headers=auth["reviewer"]).json()
     assert [p["id"] for p in viewer["items"]] == ["P1"]       # P2 không có sinh viên trong phạm vi
 
 

@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Table, UniqueConstraint
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Table, UniqueConstraint, Index, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.session import Base
@@ -15,16 +15,27 @@ user_group_access = Table(
 
 class User(Base):
     __tablename__ = "users"
+    __table_args__ = (UniqueConstraint("student_id", name="uq_users_student_id"),)
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
+    username: Mapped[str] = mapped_column(String(255), default=lambda ctx: ctx.get_current_parameters()["email"].strip().lower())
+    email: Mapped[str | None] = mapped_column(String(255), unique=True, index=True)
+    source_account_id: Mapped[str | None] = mapped_column(String(36), unique=True)
+    staff_id: Mapped[str | None] = mapped_column(String(255))
     full_name: Mapped[str] = mapped_column(String(255))
     hashed_password: Mapped[str] = mapped_column(String(255))
     role: Mapped[Role] = mapped_column(str_enum(Role))
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+
+    must_change_password: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
     token_version: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
 
+    student_id: Mapped[str | None] = mapped_column(ForeignKey("students.student_id"))
+
     groups: Mapped[list["LearnerGroup"]] = relationship(secondary=user_group_access, back_populates="users")
+
+
+Index("uq_users_username_ci", func.lower(User.username), unique=True)
 
 
 class LearnerGroup(Base):

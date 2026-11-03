@@ -7,12 +7,21 @@ from app.core.permissions import require_roles
 from app.db.session import get_db
 from app.models import CaseStatus, Role, User
 from app.schemas.common import Page
+from app.schemas.auth import UserBrief
 from app.schemas.support import SupportCaseDetailOut, SupportCaseOut, SupportCaseUpdate
-from app.services import case_service
+from app.services import case_service, review_service
 from app.services.pagination import PageParams, page_params
 
 router = APIRouter(prefix="/support-cases", tags=["support-cases"])
 staff = require_roles(Role.ADMIN, Role.REVIEWER)
+
+
+@router.get("/assignees", response_model=Page[UserBrief])
+def list_assignees(learner_id: str, params: PageParams = Depends(page_params),
+                   user: User = Depends(staff), db: Session = Depends(get_db)):
+    rows, total = review_service.list_assignees(db, user, learner_id, params)
+    return Page(items=[UserBrief.model_validate(row) for row in rows], total=total,
+                page=params.page, size=params.size)
 
 
 @router.get("", response_model=Page[SupportCaseOut])

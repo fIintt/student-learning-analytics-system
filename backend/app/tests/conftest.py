@@ -101,6 +101,7 @@ def world(db):
     admin = mk("admin@test.local", Role.ADMIN)
     reviewer = mk("reviewer@test.local", Role.REVIEWER, [group_a])
     viewer = mk("viewer@test.local", Role.VIEWER, [group_a])
+    viewer.student_id = "HS001"
     db.add_all([admin, reviewer, viewer])
     db.commit()
     return {

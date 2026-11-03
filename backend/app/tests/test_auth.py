@@ -21,13 +21,13 @@ def test_login_success_returns_token_and_user(client, world):
     assert body["token_type"] == "bearer"
     assert body["expires_in"] == settings.access_token_expire_minutes * 60
     assert body["user"] == {"id": world["reviewer"].id, "email": "reviewer@test.local",
-                            "full_name": "reviewer", "role": "reviewer"}
+                            "full_name": "reviewer", "role": "reviewer", "username": "reviewer@test.local"}
 
 
 def test_login_wrong_password_401(client, world):
     res = client.post("/api/v1/auth/login", json={"email": "admin@test.local", "password": "sai"})
     assert res.status_code == 401
-    assert res.json() == {"detail": "Email hoặc mật khẩu không đúng"}
+    assert res.json() == {"detail": "Tên đăng nhập hoặc mật khẩu không đúng"}
 
 
 def test_login_unknown_email_401(client, world):

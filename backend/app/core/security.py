@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 
 import jwt
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
@@ -31,8 +31,8 @@ def create_access_token(user_id: int, role: str, token_version: int = 0) -> str:
     now = datetime.now(timezone.utc)
     payload = {
         "sub": str(user_id),
+        "ver": token_version,
         "role": role,
-        "token_version": token_version,
         "iat": now,
         "exp": now + timedelta(minutes=settings.access_token_expire_minutes),
     }
@@ -48,6 +48,7 @@ def _unauthorized(message: str) -> HTTPException:
 
 
 def get_current_user(
+    request: Request,
     credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
     db: Session = Depends(get_db),
 ) -> User:
@@ -66,6 +67,8 @@ def get_current_user(
         raise _unauthorized("Token không hợp lệ")
     if not user.is_active:
         raise _unauthorized("Tài khoản đã bị khoá")
-    if payload.get("token_version") != user.token_version:
-        raise _unauthorized("Token không còn hiệu lực")
+    if payload.get("ver", 0) != user.token_version:
+        raise _unauthorized("Phiên đăng nhập đã hết hiệu lực, vui lòng đăng nhập lại")
+    if user.must_change_password and request.url.path not in ("/api/v1/auth/me", "/api/v1/auth/change-password"):
+        raise HTTPException(403, detail="Bạn cần đổi mật khẩu tạm trước khi sử dụng")
     return user

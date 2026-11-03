@@ -14,7 +14,7 @@ def liveness() -> dict[str, str]:
     return {"status": "ok"}
 
 
-@router.get("/ready")
+@router.get("/ready", response_model=None)  # trả JSONResponse 503 hoặc dict, không dùng response model
 def readiness(db: Session = Depends(get_db)) -> JSONResponse | dict[str, str]:
     try:
         import app.models  # noqa: F401

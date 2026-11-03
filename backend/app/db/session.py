@@ -54,9 +54,20 @@ def init_db(bind: Engine = engine) -> None:
     # Nâng cấp database cũ tại chỗ, không seed lại hoặc xoá lịch sử.
     with bind.begin() as conn:
         conn.execute(text("SELECT pg_advisory_xact_lock(110011002)"))
+        conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS username VARCHAR(255)"))
+        conn.execute(text("UPDATE users SET username=lower(trim(email)) WHERE username IS NULL"))
+        conn.execute(text("ALTER TABLE users ALTER COLUMN username SET NOT NULL"))
+        conn.execute(text("CREATE UNIQUE INDEX IF NOT EXISTS uq_users_username_ci ON users (lower(username))"))
+        conn.execute(text("ALTER TABLE users ALTER COLUMN email DROP NOT NULL"))
+        conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS source_account_id VARCHAR(36)"))
+        conn.execute(text("CREATE UNIQUE INDEX IF NOT EXISTS uq_users_source_account_id ON users (source_account_id)"))
+        conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS staff_id VARCHAR(255)"))
+        conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS must_change_password BOOLEAN NOT NULL DEFAULT false"))
+        conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS token_version INTEGER NOT NULL DEFAULT 0"))
+        conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS student_id VARCHAR REFERENCES students(student_id)"))
+        conn.execute(text("CREATE UNIQUE INDEX IF NOT EXISTS uq_users_student_id ON users (student_id)"))
         conn.execute(text("ALTER TABLE metric_results ADD COLUMN IF NOT EXISTS revision INTEGER NOT NULL DEFAULT 1"))
         conn.execute(text("ALTER TABLE metric_results ADD COLUMN IF NOT EXISTS source_hash VARCHAR(64)"))
-        conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS token_version INTEGER NOT NULL DEFAULT 0"))
         conn.execute(text("ALTER TABLE metric_results DROP CONSTRAINT IF EXISTS uq_metric_result_term"))
         conn.execute(text("""
             DO $$ BEGIN

@@ -26,6 +26,7 @@ from app.models import (
     Student,
     SupportCase,
     User,
+    Role,
 )
 
 _OPEN_CASE = (CaseStatus.OPEN, CaseStatus.IN_PROGRESS)
@@ -172,6 +173,8 @@ def group_report(db: Session, user: User, group_id: int) -> dict:
 
 
 def program_report(db: Session, user: User, program_id: str) -> dict:
+    if user.role == Role.VIEWER:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, detail="Bạn không có quyền xem chương trình này")
     program = db.get(Program, program_id)
     if program is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Không tìm thấy chương trình")

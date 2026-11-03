@@ -88,7 +88,7 @@ def test_learner_report_permissions(client, world, auth):
 # --- báo cáo nhóm --------------------------------------------------------------------------
 
 def test_group_report(client, world, auth, scenario):
-    res = client.get(f"{REPORTS}/group/{world['group_a'].id}", headers=auth["viewer"])
+    res = client.get(f"{REPORTS}/group/{world['group_a'].id}", headers=auth["reviewer"])
     assert res.status_code == 200
     body = res.json()
     assert body["scope"] == {"type": "group", "id": world["group_a"].id, "name": "P1-2022"}
@@ -134,7 +134,7 @@ def test_program_report_scoped_to_viewer_groups(client, world, auth, scenario):
     assert admin["learner_count"] == 4
     assert admin["alerts"] == {"pending_review": 1, "confirmed": 1, "dismissed": 1}
 
-    viewer = client.get(url, headers=auth["viewer"]).json()
+    viewer = client.get(url, headers=auth["reviewer"]).json()
     assert viewer["learner_count"] == 2          # chỉ sinh viên thuộc nhóm A
     assert viewer["alerts"] == {"pending_review": 1, "confirmed": 1, "dismissed": 0}
     assert {l["id"] for l in viewer["learners_needing_support"]} == {"HS001"}

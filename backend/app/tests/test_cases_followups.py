@@ -23,8 +23,12 @@ def cases(client, world, auth, alerts):
 def test_list_and_get_cases_scoped(client, world, auth, cases):
     assert client.get(CASES, headers=auth["admin"]).json()["total"] == 2
     assert client.get(CASES, headers=auth["viewer"]).status_code == 403
-    assert client.get(f"{CASES}/{cases[1]['id']}", headers=auth["viewer"]).status_code == 403
     assert client.get(f"{CASES}/{cases[0]['id']}", headers=auth["viewer"]).status_code == 403
+    reviewer = client.get(CASES, headers=auth["reviewer"]).json()
+    assert [c["learner"]["id"] for c in reviewer["items"]] == ["HS001"]
+    assert client.get(f"{CASES}/{cases[1]['id']}", headers=auth["reviewer"]).status_code == 403
+    detail = client.get(f"{CASES}/{cases[0]['id']}", headers=auth["reviewer"]).json()
+    assert detail["followups"] == []
     assert client.get(f"{CASES}/999", headers=auth["admin"]).status_code == 404
 
 
@@ -83,7 +87,9 @@ def test_create_followup_with_post_metric(client, db, world, auth, cases):
     assert body["post_metric_result"]["id"] == result_id
     assert body["post_metric_result"]["metric_code"] == "CUM_GPA"
 
-    assert client.get(f"{CASES}/{cases[0]['id']}", headers=auth["viewer"]).status_code == 403
+    detail = client.get(f"{CASES}/{cases[0]['id']}", headers=auth["reviewer"]).json()
+    assert detail["followup_count"] == 1
+    assert detail["followups"][0]["id"] == body["id"]
 
 
 def test_followup_defaults_and_validation(client, db, world, auth, cases):
@@ -121,5 +127,6 @@ def test_list_followups_scoped(client, world, auth, cases):
         client.post(FOLLOWUPS, json={"case_id": case["id"], "action": "x"}, headers=auth["admin"])
     assert client.get(FOLLOWUPS, headers=auth["admin"]).json()["total"] == 2
     assert client.get(FOLLOWUPS, headers=auth["viewer"]).status_code == 403
-    assert client.get(FOLLOWUPS, params={"case_id": cases[1]["id"]}, headers=auth["viewer"]).status_code == 403
-    assert client.get(FOLLOWUPS, params={"case_id": cases[0]["id"]}, headers=auth["viewer"]).status_code == 403
+    assert client.get(FOLLOWUPS, headers=auth["reviewer"]).json()["total"] == 1
+    assert client.get(FOLLOWUPS, params={"case_id": cases[1]["id"]}, headers=auth["reviewer"]).status_code == 403
+    assert client.get(FOLLOWUPS, params={"case_id": cases[0]["id"]}, headers=auth["reviewer"]).json()["total"] == 1
