@@ -1,0 +1,51 @@
+staff_id,name,email,department,type
+GV0001,Ngo Huu Bao,bao.nh@neu.example,Faculty of Mathematical Economics,lecturer
+GV0002,Nguyen Quang Hai,hai.nq@neu.example,Faculty of Business Administration,lecturer
+GV0003,Bui Xuan Hung,hung.bx@neu.example,Faculty of Statistics,lecturer
+GV0004,Mai Hai Phuong,phuong.mh@neu.example,Faculty of Human Resource Management,lecturer
+GV0005,Nguyen Ngoc Quynh,quynh.nn@neu.example,Faculty of Economics,lecturer
+GV0006,Nguyen Quoc Quan,quan.nq@neu.example,Faculty of Information Technology,lecturer
+GV0007,Nguyen Thanh Dat,dat.nt@neu.example,Faculty of Economics,lecturer
+GV0008,Nguyen Van Nam,nam.nv@neu.example,Faculty of Marketing,lecturer
+GV0009,Nguyen Bao Huong,huong.nb@neu.example,Faculty of Banking and Finance,lecturer
+GV0010,Mai Gia Son,son.mg@neu.example,Faculty of Investment,lecturer
+GV0011,Hoang Hai Hanh,hanh.hh@neu.example,Faculty of Human Resource Management,lecturer
+GV0012,Dang Bao Hoa,hoa.db@neu.example,Faculty of Business Administration,lecturer
+GV0013,Le Diem My,my.ld@neu.example,Faculty of Law,lecturer
+GV0014,Duong Mai Dung,dung.dm@neu.example,Faculty of Information Technology,lecturer
+GV0015,Nguyen Van Thang,thang.nv@neu.example,Faculty of Information Technology,lecturer
+GV0016,Ha Gia Phong,phong.hg@neu.example,Faculty of Human Resource Management,lecturer
+GV0017,Hoang Hong Phuong,phuong.hh@neu.example,Faculty of Tourism and Hospitality,lecturer
+GV0018,Nguyen Ngoc Linh,linh.nn@neu.example,Faculty of Investment,lecturer
+GV0019,Tran Mai Nhung,nhung.tm@neu.example,Faculty of Insurance,lecturer
+GV0020,Duong Khanh Loan,loan.dk@neu.example,Faculty of Mathematical Economics,lecturer
+GV0021,Nguyen Bao Hanh,hanh.nb@neu.example,Faculty of Investment,lecturer
+GV0022,Dinh Thi Yen,yen.dt@neu.example,Faculty of Mathematical Economics,lecturer
+GV0023,Nguyen Ngoc Vy,vy.nn@neu.example,Faculty of Insurance,lecturer
+GV0024,Tran Xuan Son,son.tx@neu.example,Faculty of Tourism and Hospitality,lecturer
+GV0025,Le Gia Duc,duc.lg@neu.example,Faculty of Real Estate and Resources Economics,lecturer
+GV0026,Ha Bao Van,van.hb@neu.example,Faculty of Economics,lecturer
+GV0027,Dinh Quoc Trung,trung.dq@neu.example,Faculty of Statistics,lecturer
+GV0028,Tran Minh Trung,trung.tm@neu.example,Faculty of Accounting,lecturer
+GV0029,Ngo Thuy Trang,trang.nt@neu.example,Faculty of Insurance,lecturer
+GV0030,Nguyen Xuan Manh,manh.nx@neu.example,Faculty of Marketing,lecturer
+GV0031,Le Diem Vy,vy.ld@neu.example,Faculty of Information Technology,lecturer
+GV0032,Le Thu Hoa,hoa.lt@neu.example,Faculty of Accounting,lecturer
+GV0033,Ngo Tuan Trung,trung.nt@neu.example,Faculty of Tourism and Hospitality,lecturer
+GV0034,Nguyen Thu Linh,linh.nt@neu.example,Faculty of Real Estate and Resources Economics,lecturer
+GV0035,Bui Hai Vy,vy.bh@neu.example,Faculty of Business Administration,lecturer
+GV0036,Nguyen Thu Giang,giang.nt@neu.example,Faculty of Real Estate and Resources Economics,lecturer
+GV0037,Tran Hong Nhung,nhung.th@neu.example,Faculty of Law,lecturer
+GV0038,Pham Minh Son,son.pm@neu.example,Faculty of Accounting,lecturer
+GV0039,Le Mai Hien,hien.lm@neu.example,Faculty of Marketing,lecturer
+GV0040,Nguyen Gia Thang,thang.ng@neu.example,Faculty of Statistics,lecturer
+GV0041,Vu Duc Tung,tung.vd@neu.example,Faculty of Banking and Finance,lecturer
+GV0042,Bui Phuong Phuong,phuong.bp@neu.example,Faculty of Banking and Finance,lecturer
+GV0043,Pham Quoc Long,long.pq@neu.example,Faculty of Law,lecturer
+QT0001,Le Huu Hoang,hoang.lh@neu.example,Training Office,administrator
+QT0002,Bui Xuan Vinh,vinh.bx@neu.example,Training Office,administrator
+QT0003,Nguyen Quoc Cuong,cuong.nq@neu.example,Student Affairs Office,administrator
+QT0004,Pham Hong Thao,thao.ph@neu.example,Student Affairs Office,administrator
+QT0005,Le Ngoc Dung,dung.ln@neu.example,Quality Assurance Office,administrator
+QT0006,Do Thu Hien,hien.dt@neu.example,IT Center,administrator
+QT0007,Bui Mai Lan,lan.bm@neu.example,IT Center,administrator

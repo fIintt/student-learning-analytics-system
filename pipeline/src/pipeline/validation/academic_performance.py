@@ -14,7 +14,7 @@ _REQUIRED_ACADEMIC_PERFORMANCE_COLUMNS = [
 ]
 
 
-def _build_academic_performance_rules(
+def _create_academic_performance_rules(
     valid_student_ids: list[str],
 ) -> dict[str, pl.Expr]:
     return {
@@ -60,5 +60,5 @@ def validate_academic_performance(
     return validate_data(
         lf,
         _REQUIRED_ACADEMIC_PERFORMANCE_COLUMNS,
-        _build_academic_performance_rules(valid_student_ids),
+        _create_academic_performance_rules(valid_student_ids),
     )
