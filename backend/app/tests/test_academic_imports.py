@@ -62,18 +62,17 @@ def test_upload_preview_then_append_only_and_idempotence(client, db, world, auth
 
 
 @pytest.mark.parametrize("role", ["reviewer", "admin"])
-def test_conflicting_grade_rejected_even_for_admin(client, db, world, auth, role):
+def test_existing_grade_is_updated_when_values_change(client, db, world, auth, role):
     add_term(db, "HS001", cumulative_gpa=1.5)
     rows = "HS001,2025-2026,1,18,18,0,3,2.8\nHS001,2026-2027,1,20,20,0,3,3\n"
     job_id, preview = upload(client, auth, rows, role)
-    assert preview["rejected_rows"] == 1 and preview["new_rows"] == 1
-    errors = client.get(f"{URL}/{job_id}/errors?size=1", headers=auth[role]).json()
-    assert errors["items"][0]["reason"] == "existing_record_conflict"
-    assert errors["items"][0]["row_number"] == 2
+    assert preview["rejected_rows"] == 0
+    assert preview["new_rows"] == 1 and preview["updated_rows"] == 1
+    assert client.get(f"{URL}/{job_id}/errors?size=1", headers=auth[role]).json()["items"] == []
     result = confirm(client, auth, job_id, role)
-    assert result["inserted_rows"] == 1
+    assert result["inserted_rows"] == 2 and result["updated_rows"] == 1
     db.expire_all()
-    assert db.get(AcademicPerformance, ("HS001", "2025-2026", 1)).cumulative_gpa == 1.5
+    assert db.get(AcademicPerformance, ("HS001", "2025-2026", 1)).cumulative_gpa == 2.8
 
 
 def test_invalid_outside_scope_unknown_and_conflicting_duplicates(client, db, world, auth):
@@ -120,13 +119,14 @@ def test_history_errors_and_confirm_are_owner_or_admin_only(client, db, world, a
 
 
 @pytest.mark.parametrize("different", [False, True])
-def test_concurrent_imports_never_overwrite(client, db, world, auth, different):
+def test_concurrent_imports_insert_or_update_without_duplicates(client, db, world, auth, different):
     first, _ = upload(client, auth, "HS001,2026-2027,1,20,20,0,3,3\n")
     second, _ = upload(client, auth, f"HS001,2026-2027,1,20,20,0,3,{2 if different else 3}\n")
     with ThreadPoolExecutor(max_workers=2) as pool:
         results = list(pool.map(lambda job: confirm(client, auth, job), [first, second]))
-    assert sum(r["inserted_rows"] for r in results) == 1
-    assert sum(r["rejected_rows"] for r in results) == int(different)
+    assert sum(r["inserted_rows"] for r in results) in (1, 2)
+    assert sum(r["updated_rows"] for r in results) in (0, 1)
+    assert sum(r["rejected_rows"] for r in results) == 0
     assert db.query(AcademicPerformance).count() == 1
 
 
@@ -166,7 +166,7 @@ def test_worker_failure_and_stale_job_do_not_write_grades(client, db, world, aut
     assert db.query(AcademicPerformance).count() == 0
 
 
-def test_cli_ingestion_rejects_old_grade_changes(engine, db, world, tmp_path):
+def test_cli_ingestion_updates_existing_grade_changes(engine, db, world, tmp_path):
     add_term(db, "HS001", cumulative_gpa=1.5)
     path = tmp_path / "grades.csv"
     path.write_text(HEADER + "HS001,2025-2026,1,18,18,0,3,2.8\nHS001,2026-2027,1,20,20,0,3,3\n", encoding="utf-8")
@@ -193,10 +193,10 @@ with psycopg.connect(c["dsn"]) as conn:
     result = subprocess.run([command[0], "-c", code], input=json.dumps(context), text=True, encoding="utf-8",
                             env={**os.environ, "PYTHONPATH": str(root / "src")}, capture_output=True, check=True)
     first, second = json.loads(result.stdout)
-    assert first["rejected"] == 1 and first["loaded"] == 1
-    assert second["rejected"] == 1 and second["loaded"] == 0
+    assert first["rejected"] == 0 and first["loaded"] == 2
+    assert second["rejected"] == 0 and second["loaded"] == 0
     db.expire_all()
-    assert db.get(AcademicPerformance, ("HS001", "2025-2026", 1)).cumulative_gpa == 1.5
+    assert db.get(AcademicPerformance, ("HS001", "2025-2026", 1)).cumulative_gpa == 2.8
 
 
 def test_database_failure_rolls_back_whole_confirmation(client, db, world, auth):

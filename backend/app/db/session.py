@@ -68,6 +68,7 @@ def init_db(bind: Engine = engine) -> None:
         conn.execute(text("CREATE UNIQUE INDEX IF NOT EXISTS uq_users_student_id ON users (student_id)"))
         conn.execute(text("ALTER TABLE metric_results ADD COLUMN IF NOT EXISTS revision INTEGER NOT NULL DEFAULT 1"))
         conn.execute(text("ALTER TABLE metric_results ADD COLUMN IF NOT EXISTS source_hash VARCHAR(64)"))
+        conn.execute(text("ALTER TABLE academic_imports ADD COLUMN IF NOT EXISTS updated_rows INTEGER NOT NULL DEFAULT 0"))
         conn.execute(text("ALTER TABLE metric_results DROP CONSTRAINT IF EXISTS uq_metric_result_term"))
         conn.execute(text("""
             DO $$ BEGIN

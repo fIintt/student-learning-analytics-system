@@ -65,7 +65,7 @@ def get_import(db: Session, user: User, import_id: int, *, lock=False):
 
 def detail(job: AcademicImport):
     return {**AcademicImportOut.model_validate(job).model_dump(),
-            "preview_rows": [row for row in job.prepared_rows if row["disposition"] in ("new", "inserted")][:20]}
+            "preview_rows": [row for row in job.prepared_rows if row["disposition"] in ("new", "update", "inserted")][:20]}
 
 
 def create(db: Session, user: User, file: UploadFile):

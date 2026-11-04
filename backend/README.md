@@ -4,11 +4,11 @@ BE FastAPI dùng PostgreSQL, chạy Python 3.14. Source ứng dụng nằm trong
 
 ## Chức năng và quyền
 
-| Role API | Đối tượng | Phạm vi |
-| --- | --- | --- |
-| admin | Admin | Toàn bộ dữ liệu; quản trị tài khoản sinh viên, đồng bộ tài khoản, gán nhóm giáo viên và phê duyệt công thức |
-| reviewer | Giáo viên | Sinh viên thuộc nhóm được gán theo chương trình và khoá; thao tác theo quyền từng API |
-| viewer | Sinh viên | Chỉ dữ liệu của mã sinh viên liên kết với tài khoản |
+| Role API | Đối tượng | Phạm vi                                                                                                     |
+| -------- | --------- | ----------------------------------------------------------------------------------------------------------- |
+| admin    | Admin     | Toàn bộ dữ liệu; quản trị tài khoản sinh viên, đồng bộ tài khoản, gán nhóm giáo viên và phê duyệt công thức |
+| reviewer | Giáo viên | Sinh viên thuộc nhóm được gán theo chương trình và khoá; thao tác theo quyền từng API                       |
+| viewer   | Sinh viên | Chỉ dữ liệu của mã sinh viên liên kết với tài khoản                                                         |
 
 Đã có đăng nhập username/JWT, đổi mật khẩu, danh mục chương trình/nhóm/sinh viên, công thức và duyệt công thức, tính chỉ số, rà soát cảnh báo, hồ sơ hỗ trợ, phân công, theo dõi và báo cáo JSON.
 
@@ -83,14 +83,14 @@ Nhóm giáo viên lưu trong `user_group_access`, gán qua API, không cần s�
 
 ## Luồng nhập CSV kết quả học tập
 
-| Thao tác | Method và URL (sau `/api/v1`) |
-| --- | --- |
-| Tải mẫu | GET `/academic-imports/template` |
-| Upload | POST `/academic-imports` |
-| Danh sách lần nhập | GET `/academic-imports` |
-| Trạng thái/xem trước | GET `/academic-imports/{id}` |
-| Dòng lỗi | GET `/academic-imports/{id}/errors` |
-| Xác nhận | POST `/academic-imports/{id}/confirm` |
+| Thao tác             | Method và URL (sau `/api/v1`)         |
+| -------------------- | ------------------------------------- |
+| Tải mẫu              | GET `/academic-imports/template`      |
+| Upload               | POST `/academic-imports`              |
+| Danh sách lần nhập   | GET `/academic-imports`               |
+| Trạng thái/xem trước | GET `/academic-imports/{id}`          |
+| Dòng lỗi             | GET `/academic-imports/{id}/errors`   |
+| Xác nhận             | POST `/academic-imports/{id}/confirm` |
 
 Upload bằng multipart/form-data, trường `file`. CSV UTF-8, dấu phẩy, đúng tám cột:
 
@@ -113,7 +113,7 @@ BE gọi worker của pipeline bằng subprocess. Worker tái sử dụng hàm c
 - Khoá dữ liệu: `student_id + academic_year + semester`.
 - Bản ghi học kỳ mới hợp lệ: thêm sau xác nhận.
 - Bản ghi giống dữ liệu đã có: bỏ qua, không tạo trùng.
-- Cùng khoá nhưng GPA/tín chỉ khác: báo `existing_record_conflict`, không sửa điểm cũ, kể cả admin upload.
+- Cùng khoá nhưng GPA/tín chỉ khác: đưa vào nhóm cập nhật và ghi đè các giá trị học kỳ khi xác nhận; dữ liệu trùng hoàn toàn được bỏ qua.
 - Giáo viên chỉ nhập trong nhóm được gán; quyền được kiểm tra lại khi xác nhận.
 - Có bảo vệ nhập đồng thời; lỗi database làm rollback lần xác nhận.
 - Nhập CSV không tự tính chỉ số/cảnh báo; cần gọi API tính chỉ số riêng.
@@ -124,22 +124,22 @@ Tác vụ nền hiện chạy trong tiến trình BE, chưa có hàng đợi b�
 
 Swagger của bản đang chạy là căn cứ cho method, request, enum, bộ lọc và response chi tiết. Mọi đường dẫn dưới đây có prefix `/api/v1`.
 
-| Chức năng | Đường dẫn chính |
-| --- | --- |
-| Xác thực | `/auth/login`, `/auth/me`, `/auth/change-password` |
-| Liên kết sinh viên | `/auth/users/{user_id}/student-link` |
-| Danh mục | `/programs`, `/groups`, `/learners` |
-| Công thức | `/metric-definitions` và các thao tác submit/approve/reject |
-| Tính/tra cứu chỉ số | `/metrics/compute`, `/metrics/results` |
-| Rà soát cảnh báo | Nhóm review trong Swagger |
-| Hồ sơ hỗ trợ | `/support-cases`, `/support-cases/{id}` |
-| Người nhận hồ sơ | `/support-cases/assignees` |
-| Theo dõi | `/followups` |
-| Báo cáo JSON | `/reports/learner/{learner_id}`, `/reports/group/{group_id}`, `/reports/program/{program_id}` |
-| Cổng sinh viên | `/me/student-profile`, `/me/academic-performance`, `/me/academic-summary`, `/me/alerts` |
-| Tài khoản sinh viên | `/admin/student-accounts` |
-| Đồng bộ tài khoản | `/admin/accounts/sync` |
-| Giáo viên/gán nhóm | `/admin/teacher-accounts`, `/admin/teacher-accounts/{user_id}/groups` |
+| Chức năng           | Đường dẫn chính                                                                               |
+| ------------------- | --------------------------------------------------------------------------------------------- |
+| Xác thực            | `/auth/login`, `/auth/me`, `/auth/change-password`                                            |
+| Liên kết sinh viên  | `/auth/users/{user_id}/student-link`                                                          |
+| Danh mục            | `/programs`, `/groups`, `/learners`                                                           |
+| Công thức           | `/metric-definitions` và các thao tác submit/approve/reject                                   |
+| Tính/tra cứu chỉ số | `/metrics/compute`, `/metrics/results`                                                        |
+| Rà soát cảnh báo    | Nhóm review trong Swagger                                                                     |
+| Hồ sơ hỗ trợ        | `/support-cases`, `/support-cases/{id}`                                                       |
+| Người nhận hồ sơ    | `/support-cases/assignees`                                                                    |
+| Theo dõi            | `/followups`                                                                                  |
+| Báo cáo JSON        | `/reports/learner/{learner_id}`, `/reports/group/{group_id}`, `/reports/program/{program_id}` |
+| Cổng sinh viên      | `/me/student-profile`, `/me/academic-performance`, `/me/academic-summary`, `/me/alerts`       |
+| Tài khoản sinh viên | `/admin/student-accounts`                                                                     |
+| Đồng bộ tài khoản   | `/admin/accounts/sync`                                                                        |
+| Giáo viên/gán nhóm  | `/admin/teacher-accounts`, `/admin/teacher-accounts/{user_id}/groups`                         |
 
 Quyền được kiểm tra tại BE. Danh sách thường có phân trang; dùng tổng số và lấy đủ trang khi tổng hợp. FE cần xử lý 401 (xác thực), 403 (quyền), 404, 409 (trạng thái/xung đột), 413 (file lớn), 422 (request không hợp lệ), 503 (chưa sẵn sàng). Lỗi thông thường có trường `detail`; đọc schema từng endpoint.
 

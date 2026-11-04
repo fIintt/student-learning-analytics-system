@@ -126,7 +126,7 @@ def _prepare(conn: psycopg.Connection, context: dict) -> tuple[dict, list[dict],
         elif key in existing and _same_values(values, existing[key]):
             prepared.append({**values, "disposition": "unchanged"})
         elif key in existing:
-            errors.append({"row_number": int(row["__row_number"]), "reason": "existing_record_conflict", "values": values})
+            prepared.append({**values, "row_number": int(row["__row_number"]), "disposition": "update"})
         else:
             prepared.append({**values, "row_number": int(row["__row_number"]), "disposition": "new"})
             new_rows.append(values)
@@ -135,6 +135,7 @@ def _prepare(conn: psycopg.Connection, context: dict) -> tuple[dict, list[dict],
         "total_rows": raw_count,
         "duplicated_rows": raw_count - transformed_df.height,
         "new_rows": len(new_rows),
+        "updated_rows": sum(row["disposition"] == "update" for row in prepared),
         "unchanged_rows": sum(row["disposition"] == "unchanged" for row in prepared),
         "rejected_rows": len(errors),
     }
@@ -153,19 +154,20 @@ def _update_job(conn: psycopg.Connection, import_id: int, summary: dict, prepare
         """
         UPDATE academic_imports
         SET status = %s, total_rows = %s, duplicated_rows = %s, new_rows = %s,
-            unchanged_rows = %s, rejected_rows = %s, inserted_rows = %s,
+            updated_rows = %s, unchanged_rows = %s, rejected_rows = %s, inserted_rows = %s,
             prepared_rows = %s, error_message = %s, updated_at = CURRENT_TIMESTAMP
         WHERE id = %s
         """,
         (status, summary["total_rows"], summary["duplicated_rows"], summary["new_rows"],
-         summary["unchanged_rows"], summary["rejected_rows"], summary.get("inserted_rows", 0),
+         summary["updated_rows"], summary["unchanged_rows"], summary["rejected_rows"],
+         summary.get("inserted_rows", 0),
          json.dumps(prepared, ensure_ascii=False), error_message, import_id),
     )
 
 
-def _insert_new(conn: psycopg.Connection, rows: list[dict]) -> tuple[int, list[dict]]:
+def _write_rows(conn: psycopg.Connection, rows: list[dict]) -> tuple[int, int]:
     inserted = 0
-    conflicts = []
+    updated = 0
     for row in rows:
         result = conn.execute(
             """
@@ -173,19 +175,23 @@ def _insert_new(conn: psycopg.Connection, rows: list[dict]) -> tuple[int, list[d
                 (student_id, academic_year, semester, registered_credits, passed_credits,
                  failed_credits, semester_gpa, cumulative_gpa)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-            ON CONFLICT (student_id, academic_year, semester) DO NOTHING
+            ON CONFLICT (student_id, academic_year, semester) DO UPDATE SET
+                registered_credits = EXCLUDED.registered_credits,
+                passed_credits = EXCLUDED.passed_credits,
+                failed_credits = EXCLUDED.failed_credits,
+                semester_gpa = EXCLUDED.semester_gpa,
+                cumulative_gpa = EXCLUDED.cumulative_gpa
+            RETURNING (xmax = 0) AS was_inserted
             """,
             tuple(row[column] for column in ("student_id", "academic_year", "semester", *VALUE_COLUMNS)),
         )
-        if result.rowcount:
-            inserted += result.rowcount
-        else:
-            conflicts.append({
-                "row_number": row["row_number"],
-                "reason": "existing_record_conflict",
-                "values": _row_values(row),
-            })
-    return inserted, conflicts
+        returned = result.fetchone()
+        if returned is None:
+            raise RuntimeError("Không nhận được kết quả ghi dữ liệu học tập")
+        was_inserted = returned[0]
+        inserted += int(was_inserted)
+        updated += int(not was_inserted)
+    return inserted + updated, updated
 
 
 def run(context: dict) -> None:
@@ -194,10 +200,11 @@ def run(context: dict) -> None:
         try:
             summary, prepared, errors = _prepare(conn, context)
             if context["mode"] == "confirm":
-                inserted, conflicts = _insert_new(conn, [row for row in prepared if row["disposition"] == "new"])
-                errors.extend(conflicts)
-                summary["rejected_rows"] += len(conflicts)
-                summary["inserted_rows"] = inserted
+                affected, updated = _write_rows(
+                    conn, [row for row in prepared if row["disposition"] in ("new", "update")]
+                )
+                summary["updated_rows"] = updated
+                summary["inserted_rows"] = affected
                 status = "completed"
             else:
                 summary["inserted_rows"] = 0
