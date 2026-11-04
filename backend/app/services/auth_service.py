@@ -7,10 +7,18 @@ from app.core.permissions import accessible_group_ids
 from app.core.security import create_access_token, verify_password
 from app.models import User
 from app.schemas.auth import LoginResponse, MeResponse, UserBrief
+from app.services.account_sync_service import sync_accounts
 
 
 def login(db: Session, username: str, password: str) -> LoginResponse:
     user = db.scalars(select(User).where(func.lower(User.username) == username.strip().lower())).first()
+    if user is None:
+        try:
+            sync_accounts(db)
+        except HTTPException as exc:
+            if exc.status_code != status.HTTP_503_SERVICE_UNAVAILABLE:
+                raise
+        user = db.scalars(select(User).where(func.lower(User.username) == username.strip().lower())).first()
     if user is None or not verify_password(password, user.hashed_password):
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="Tên đăng nhập hoặc mật khẩu không đúng")
     if not user.is_active:
