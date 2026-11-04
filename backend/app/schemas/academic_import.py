@@ -10,6 +10,7 @@ class AcademicImportOut(ORMModel):
     total_rows: int
     duplicated_rows: int
     new_rows: int
+    updated_rows: int
     unchanged_rows: int
     rejected_rows: int
     inserted_rows: int

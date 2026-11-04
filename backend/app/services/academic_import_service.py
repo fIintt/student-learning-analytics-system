@@ -65,7 +65,7 @@ def get_import(db: Session, user: User, import_id: int, *, lock=False):
 
 def detail(job: AcademicImport):
     return {**AcademicImportOut.model_validate(job).model_dump(),
-            "preview_rows": [row for row in job.prepared_rows if row["disposition"] in ("new", "inserted")][:20]}
+            "preview_rows": [row for row in job.prepared_rows if row["disposition"] in ("new", "update", "inserted")][:20]}
 
 
 def create(db: Session, user: User, file: UploadFile):
@@ -146,7 +146,8 @@ def run_job(bind, import_id: int, mode: str):
             job = db.get(AcademicImport, import_id)
             if job is None:
                 return
-            context = {"import_id": job.id, "mode": mode, "file_path": str(_file_path(job.storage_key)),
+            context = {"import_id": job.id, "mode": mode, "uploaded_by": job.uploaded_by,
+                       "file_path": str(_file_path(job.storage_key)),
                        "source_hash": job.source_hash, "max_rows": settings.academic_import_max_rows,
                        "max_bytes": settings.academic_import_max_bytes,
                        "schema": db.scalar(text("SELECT current_schema()")),
@@ -154,13 +155,18 @@ def run_job(bind, import_id: int, mode: str):
         environment = dict(os.environ)
         environment["PYTHONPATH"] = str(root / "src") + os.pathsep + environment.get("PYTHONPATH", "")
         environment["PYTHONIOENCODING"] = "utf-8"
-        subprocess.run(command, input=json.dumps(context), text=True, encoding="utf-8", errors="replace", capture_output=True,
-                       cwd=root, env=environment, timeout=settings.academic_import_timeout_seconds, check=True)
-    except Exception:
+        result = subprocess.run(command, input=json.dumps(context), text=True, encoding="utf-8", errors="replace", capture_output=True,
+                                cwd=root, env=environment, timeout=settings.academic_import_timeout_seconds)
+        if result.returncode:
+            detail = (result.stderr or result.stdout or "Worker không trả về thông tin lỗi").strip()
+            raise RuntimeError(detail[-2000:])
+    except Exception as exc:
         logger.warning("Academic import %s (%s) failed; no existing grades are overwritten", import_id, mode)
+        error_message = next((line.strip() for line in reversed(str(exc).splitlines()) if line.strip()),
+                             "Không chạy được pipeline hoặc tác vụ quá thời gian")
         with Session(bind) as db:
             db.execute(update(AcademicImport).where(AcademicImport.id == import_id,
                        AcademicImport.status.in_(["processing", "importing"]))
-                       .values(status="failed", error_message="Không chạy được pipeline hoặc tác vụ quá thời gian; liên hệ quản trị viên",
+                       .values(status="failed", error_message=error_message[:2000],
                                updated_at=datetime.now(timezone.utc).replace(tzinfo=None)))
             db.commit()

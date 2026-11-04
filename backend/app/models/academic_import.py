@@ -19,6 +19,7 @@ class AcademicImport(Base):
     total_rows: Mapped[int] = mapped_column(Integer, default=0)
     duplicated_rows: Mapped[int] = mapped_column(Integer, default=0)
     new_rows: Mapped[int] = mapped_column(Integer, default=0)
+    updated_rows: Mapped[int] = mapped_column(Integer, default=0)
     unchanged_rows: Mapped[int] = mapped_column(Integer, default=0)
     rejected_rows: Mapped[int] = mapped_column(Integer, default=0)
     inserted_rows: Mapped[int] = mapped_column(Integer, default=0)
