@@ -1,0 +1,144 @@
+/* Hộp thoại, form, khu vực tải CSV và thông báo ở góc màn hình.
+ * Đổi màu chủ đạo trong theme.css, không cần sửa từng mã màu ở đây.
+ */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: #15372a66;
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.modal {
+  background: white;
+  border-radius: 14px;
+  width: 520px;
+  max-width: 100%;
+  max-height: 90vh;
+  overflow: auto;
+  padding: 26px;
+  box-shadow: 0 18px 80px #17372926;
+}
+.modal.wide {
+  width: 900px;
+}
+.modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #edf1eb;
+  padding-bottom: 15px;
+  margin-bottom: 20px;
+}
+.modal-head h2 {
+  font-size: 18px;
+}
+.modal > p {
+  font-size: 13px;
+  margin: 12px 0;
+  color: #7a8f7f;
+}
+.modal form > p {
+  font-size: 13px;
+  color: #8e9c92;
+  margin-bottom: 16px;
+}
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #69816e;
+  margin-bottom: 17px;
+}
+.modal form > .button {
+  width: 100%;
+  margin-top: 10px;
+}
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.review-summary {
+  background: #f1f6f0;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+.review-summary p {
+  font-size: 13px;
+  color: #819783;
+  margin-top: 8px;
+}
+.review-summary .badge {
+  margin-top: 8px;
+}
+.column-hint {
+  font-family: monospace;
+  font-size: 13px !important;
+  overflow-wrap: anywhere;
+  line-height: 1.8;
+}
+.upload-zone {
+  border: 1px dashed #bdd2c0;
+  background: #f7faf6;
+  padding: 24px;
+  text-align: center;
+  align-items: center;
+  border-radius: 9px;
+}
+.upload-zone span {
+  font-size: 12px;
+  color: #98aa99;
+}
+.upload-zone input {
+  max-width: 100%;
+  font-size: 12px;
+}
+.timeline > div {
+  border-left: 2px solid #dfeade;
+  margin: 0 0 17px 5px;
+  padding: 0 0 8px 16px;
+}
+.timeline strong {
+  display: block;
+  font-size: 14px;
+  margin: 5px 0;
+}
+.timeline p {
+  font-size: 13px;
+  color: #8ca08e;
+}
+.break-cell {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  max-width: 200px;
+}
+.toast {
+  position: fixed;
+  bottom: 25px;
+  right: 25px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 200;
+  background: var(--color-primary);
+  color: white;
+  border-radius: 10px;
+  padding: 16px 20px;
+  box-shadow: 0 5px 30px #224b3d22;
+  font-size: 12px;
+  max-width: min(520px, 90vw);
+}
+.toast button {
+  background: none;
+  border: 0;
+  color: #bfd4c5;
+  padding: 0;
+}

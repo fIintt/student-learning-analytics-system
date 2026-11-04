@@ -1,0 +1,106 @@
+/* Khung nội dung, thanh trên cùng và tiêu đề trang.
+ * Đổi màu chủ đạo trong theme.css, không cần sửa từng mã màu ở đây.
+ */
+.main-shell {
+  margin-left: 244px;
+  flex: 1;
+  min-width: 0;
+}
+.topbar {
+  height: 75px;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 36px;
+  font-size: 12px;
+}
+.topbar > div {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.topbar span {
+  color: #97a19b;
+}
+.topbar b {
+  font-weight: 500;
+}
+.topbar svg {
+  color: #8e9e95;
+}
+.demo-dot,
+.live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #4d9274;
+  display: inline-block;
+  box-shadow: 0 0 0 3px #edf6ef;
+}
+.topbar .demo-label {
+  font-size: 12px;
+  color: #6b8b78;
+}
+.divider {
+  height: 22px;
+  width: 1px;
+  background: #edf0ee;
+  margin: 0 3px;
+}
+.icon-button {
+  border: 0;
+  background: none;
+  padding: 7px;
+  border-radius: 7px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #819389;
+}
+.icon-button:hover {
+  background: #edf3ef;
+}
+.notification {
+  position: relative;
+}
+.notification i {
+  position: absolute;
+  top: 5px;
+  right: 7px;
+  background: #cb8852;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+}
+.mobile-toggle {
+  display: none;
+}
+main {
+  max-width: 1510px;
+  margin: auto;
+  padding: 34px 36px 0;
+}
+.page-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  align-items: center;
+  margin-bottom: 25px;
+}
+.eyebrow {
+  font-size: 9px;
+  letter-spacing: 1.8px;
+  font-weight: 650;
+  color: #95a197;
+  margin-bottom: 10px;
+}
+.page-heading p {
+  font-size: 12px;
+  color: #8a9690;
+  margin-top: 9px;
+}
+.heading-actions {
+  flex-shrink: 0;
+}

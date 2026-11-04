@@ -1,0 +1,263 @@
+/* Điều chỉnh bố cục theo kích thước màn hình. Nạp sau các file khác.
+ * Đổi màu chủ đạo trong theme.css, không cần sửa từng mã màu ở đây.
+ */
+@media (min-width: 1600px) {
+  main {
+    padding: 45px 50px 0;
+  }
+  .topbar {
+    padding: 0 50px;
+  }
+  .stat {
+    padding: 18px 20px;
+  }
+  .chart {
+    height: 190px;
+  }
+}
+@media (max-width: 1200px) {
+  .sidebar {
+    width: 215px;
+    padding-left: 11px;
+    padding-right: 11px;
+  }
+  .main-shell {
+    margin-left: 215px;
+  }
+  main {
+    padding: 27px 24px 0;
+  }
+  .topbar {
+    padding: 0 24px;
+  }
+  .stats {
+    gap: 10px;
+  }
+  .stat {
+    padding: 18px 20px;
+  }
+  .stat > div {
+    font-size: 13px;
+  }
+  .notice-tag {
+    display: none;
+  }
+  h1 {
+    font-size: 25px;
+  }
+  td,
+  th {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .login-story {
+    padding: 40px;
+  }
+  .login-story h1 {
+    font-size: 40px;
+  }
+  .steps p {
+    display: none;
+  }
+}
+@media (max-width: 950px) {
+  .stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .case-grid,
+  .metric-grid {
+    grid-template-columns: 1fr;
+  }
+  .login-story {
+    padding: 35px;
+  }
+  .login-story h1 {
+    font-size: 34px;
+  }
+  .login-art .art-bars {
+    display: none;
+  }
+  .login-form {
+    padding: 35px;
+  }
+  .page-heading {
+    align-items: flex-start;
+  }
+  .heading-actions {
+    margin-top: 15px;
+  }
+}
+@media (max-width: 700px) {
+  .sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.2s;
+    width: 240px;
+    box-shadow: 5px 0 30px #163b2618;
+  }
+  .sidebar.mobile-open {
+    transform: translateX(0);
+    top: 63px;
+  }
+  .main-shell {
+    margin: 0;
+  }
+  .mobile-toggle {
+    display: inline-flex;
+  }
+  .topbar {
+    height: 63px;
+    padding: 0 15px;
+    position: sticky;
+    top: 0;
+    z-index: 40;
+  }
+  .topbar > div {
+    gap: 9px;
+  }
+  .topbar > div > span:first-of-type {
+    display: none;
+  }
+  .topbar .demo-label {
+    display: none;
+  }
+  main {
+    padding: 25px 16px 0;
+  }
+  .eyebrow {
+    font-size: 8px;
+  }
+  h1 {
+    font-size: 23px;
+  }
+  .page-heading {
+    display: block;
+  }
+  .page-heading p {
+    font-size: 11px;
+  }
+  .heading-actions {
+    margin-top: 15px;
+  }
+  .notice {
+    padding: 11px;
+    font-size: 10px;
+    align-items: flex-start;
+  }
+  .filters {
+    gap: 8px;
+  }
+  .search {
+    max-width: 100%;
+    width: 100%;
+    flex-basis: 100%;
+  }
+  .filters select {
+    max-width: 100%;
+    flex: 1;
+  }
+  .stats {
+    gap: 10px;
+  }
+  .stat > strong {
+    font-size: 28px;
+  }
+  .stat > div {
+    font-size: 13px;
+  }
+  .panel-head {
+    padding: 18px 16px;
+  }
+  .panel-head p {
+    font-size: 9px;
+  }
+  .panel-head h2 {
+    font-size: 16px;
+  }
+  .tabs {
+    overflow-x: auto;
+    white-space: nowrap;
+    gap: 2px;
+  }
+  .tabs button {
+    font-size: 13px;
+    padding: 9px 11px;
+  }
+  .profile {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    padding: 20px;
+    gap: 15px;
+  }
+  .profile h2 {
+    font-size: 19px;
+  }
+  .profile > .badge {
+    margin-left: 0;
+  }
+  .steps {
+    font-size: 13px;
+    gap: 6px;
+  }
+  .steps b {
+    padding: 6px;
+  }
+  .steps svg {
+    width: 12px;
+  }
+  .modal-overlay {
+    padding: 14px;
+  }
+  .modal {
+    padding: 20px;
+    max-height: 90dvh;
+  }
+  .modal-head h2 {
+    font-size: 16px;
+  }
+  .form-grid {
+    gap: 10px;
+  }
+  .login {
+    grid-template-columns: 1fr;
+  }
+  .login-story {
+    padding: 25px 28px;
+  }
+  .login-story > .brand + div {
+    margin: 35px 0 15px;
+  }
+  .login-story h1 {
+    font-size: 31px;
+    margin-bottom: 0;
+  }
+  .login-story h1 br:first-of-type {
+    display: none;
+  }
+  .login-story p,
+  .login-art,
+  .login-story > small {
+    display: none;
+  }
+  .login-story .login-school {
+    font-size: 14px;
+  }
+  .login-story .brand b {
+    font-size: 23px;
+  }
+  .login-story .brand-icon {
+    width: 35px;
+    height: 35px;
+  }
+  .login-story .brand b span {
+    font-size: 8px;
+  }
+  .login-form {
+    padding: 33px 27px;
+  }
+  .login-form h2 {
+    font-size: 24px;
+  }
+  .login-form-inner {
+    max-width: 430px;
+  }
+}

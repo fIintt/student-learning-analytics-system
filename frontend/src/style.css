@@ -1,0 +1,19 @@
+@import './styles/integration.css';
+/* File đầu mối: chỉ nạp CSS. Chỉnh màu trong styles/theme.css. */
+@import 'tailwindcss';
+@import './styles/theme.css';
+@import './styles/base.css';
+@import './styles/sidebar.css';
+@import './styles/layout.css';
+@import './styles/controls.css';
+@import './styles/dashboard.css';
+@import './styles/tables.css';
+@import './styles/pages.css';
+@import './styles/forms.css';
+@import './styles/login.css';
+@import './styles/responsive.css';
+@import './styles/charts.css';
+
+@theme {
+  --font-sans: Arial, Helvetica, sans-serif;
+}

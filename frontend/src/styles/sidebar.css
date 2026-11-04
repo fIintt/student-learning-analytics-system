@@ -1,0 +1,161 @@
+/* Thanh menu bên trái, logo, tài khoản và avatar.
+ * Đổi màu chủ đạo trong theme.css, không cần sửa từng mã màu ở đây.
+ */
+.shell {
+  display: flex;
+  min-height: 100vh;
+}
+.sidebar {
+  width: 244px;
+  background: var(--color-surface);
+  border-right: 1px solid var(--color-border);
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 31px 18px 0;
+  z-index: 30;
+}
+.brand {
+  display: flex;
+  gap: 11px;
+  align-items: center;
+  padding: 0 13px;
+}
+.brand-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-primary);
+  color: white;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+}
+.brand b {
+  font-size: 26px;
+  font-weight: 750;
+  line-height: 1.05;
+  letter-spacing: -1px;
+}
+.brand b span {
+  display: block;
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 1.1px;
+  color: #8c9b96;
+  margin-top: 7px;
+}
+.brand-logo {
+  display: block;
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+/* Khoảng cách giữa logo và danh sách menu. */
+.sidebar > nav {
+  margin-top: 32px;
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 13px;
+  padding: 13px 14px;
+  margin-bottom: 5px;
+  border: 0;
+  background: transparent;
+  color: #73817a;
+  text-align: left;
+  font-weight: 500;
+  font-size: 14px;
+  border-radius: 7px;
+}
+.nav-item:hover {
+  background: var(--color-primary-soft);
+}
+.nav-item.active {
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  font-weight: 650;
+}
+.count {
+  margin-left: auto;
+  font-size: 12px;
+  border-radius: 5px;
+  padding: 1px 6px;
+  background: var(--color-focus-ring);
+  color: var(--color-primary);
+}
+.sidebar-bottom {
+  margin-top: auto;
+}
+.help-card {
+  padding: 19px 15px;
+  background: var(--color-primary-soft);
+  border: 1px solid var(--color-primary-border);
+  border-radius: 9px;
+  margin: 30px 7px 18px;
+  color: var(--color-primary);
+}
+.help-card strong {
+  display: block;
+  color: var(--color-heading);
+  font-size: 11px;
+  margin: 9px 0 6px;
+}
+.help-card p {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  line-height: 1.8;
+}
+.account {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  border: 0;
+  border-top: 1px solid #edf0ee;
+  background: none;
+  text-align: left;
+  width: 100%;
+  padding: 20px 4px;
+}
+.account strong {
+  font-size: 13px;
+}
+.account small {
+  font-size: 12px;
+}
+.account > svg {
+  margin-left: auto;
+  color: #91a097;
+}
+.avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  font-size: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-weight: 650;
+}
+.avatar.dark {
+  background: var(--color-focus-ring);
+  color: var(--color-primary-dark);
+}
+.avatar.mini {
+  width: 31px;
+  height: 31px;
+  font-size: 9px;
+}
+.avatar.large {
+  width: 65px;
+  height: 65px;
+  font-size: 20px;
+}
