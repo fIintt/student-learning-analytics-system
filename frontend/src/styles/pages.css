@@ -1,0 +1,237 @@
+/* Thẻ hỗ trợ, thẻ công thức, bước nhập dữ liệu và hồ sơ sinh viên.
+ * Đổi màu chủ đạo trong theme.css, không cần sửa từng mã màu ở đây.
+ */
+.case-grid,
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 22px;
+}
+.case-card,
+.metric-card {
+  padding: 24px;
+}
+.case-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 18px;
+}
+.case-card h2 {
+  margin-bottom: 6px;
+}
+.case-card > p,
+.metric-card > p {
+  font-size: 14px;
+  color: #8d9b91;
+  margin: 18px 0;
+  min-height: 0;
+}
+.case-meta {
+  font-size: 13px;
+  line-height: 1.9;
+  padding: 15px 0;
+  border-top: 1px solid #edf1ed;
+  color: #95a499;
+}
+.metric-symbol {
+  font-family: Georgia, serif;
+  font-size: 25px;
+  color: #6d987d;
+  padding: 5px 10px;
+  background: #f0f6f1;
+  border-radius: 8px;
+}
+.code {
+  font-family: monospace;
+  margin-top: 7px;
+}
+.formula {
+  padding: 18px;
+  background: #f7f9f6;
+  border: 1px solid #eaf0e7;
+  border-radius: 7px;
+  text-align: center;
+  font-family: monospace;
+  color: #6a866e;
+  font-size: 14px;
+}
+.metric-meta {
+  display: flex;
+  justify-content: space-between;
+  margin: 20px 0;
+  font-size: 13px;
+  color: #a0aaa1;
+}
+.metric-meta b {
+  color: #657e67;
+  margin-left: 8px;
+}
+.card-actions {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  min-height: 34px;
+}
+.steps {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 25px 0;
+  color: #8b9f8f;
+  font-size: 13px;
+}
+.steps span {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.steps b {
+  background: #e8f0e8;
+  border-radius: 50%;
+  padding: 8px;
+  font-size: 12px;
+}
+.steps p {
+  margin-left: auto;
+  font-size: 10px;
+}
+.panel > .filters {
+  padding: 0 23px;
+}
+.profile {
+  display: flex;
+  align-items: center;
+  padding: 27px;
+  gap: 20px;
+}
+.profile h2 {
+  font-size: 22px;
+}
+.profile p {
+  font-size: 14px;
+  color: #84958a;
+  margin: 7px 0;
+}
+.profile > div > span {
+  font-size: 13px;
+  color: #9aaa9d;
+}
+.profile > .badge {
+  margin-left: auto;
+}
+.back {
+  margin: 0 0 20px;
+}
+.support-row {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  border: 0;
+  border-top: 1px solid #eff2ed;
+  background: none;
+  width: 100%;
+  padding: 18px 23px;
+  text-align: left;
+  font-size: 14px;
+  color: #6c8771;
+}
+.support-row > .badge {
+  margin-left: auto;
+}
+.empty {
+  text-align: center;
+  padding: 47px 25px;
+  color: #a2b4a6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.empty p {
+  margin: 14px 0;
+  font-size: 14px;
+  max-width: 440px;
+}
+.empty .button {
+  margin-top: 10px;
+}
+
+/* Thông tin tham chiếu chỉ mở ra khi người dùng cần xem. */
+.metrics-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 20px;
+}
+.reference-details {
+  margin: 16px 0;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+.reference-details summary,
+.login-help summary {
+  cursor: pointer;
+  color: var(--color-text);
+}
+.reference-details p {
+  margin: 10px 0;
+  line-height: 1.6;
+}
+.reference-details .code {
+  margin-top: 10px;
+}
+
+/* Các phiên bản cùng mã nằm chung một ô. */
+.metric-card > .metric-version-label {
+  margin: 8px 0 16px;
+  color: var(--color-text-muted);
+  font-size: 13px;
+}
+.metric-working {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--color-border);
+}
+.metric-working h3 {
+  font-size: 14px;
+  font-weight: 600;
+}
+.metric-working .case-top {
+  margin-bottom: 8px;
+}
+.metric-card .metric-meta {
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.metric-card .card-actions {
+  flex-wrap: wrap;
+}
+.metric-history {
+  border-top: 1px solid var(--color-border);
+  padding-top: 16px;
+  margin-bottom: 0;
+}
+.metric-history-row {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+.metric-history-row:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+.metric-history-row .case-top {
+  margin-bottom: 0;
+  flex-wrap: wrap;
+}
+.metric-history-row .metric-meta {
+  margin: 12px 0;
+}
+
+.account-groups ul {
+  max-height: 220px;
+  overflow-y: auto;
+  padding-left: 24px;
+  margin: 12px 0;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}

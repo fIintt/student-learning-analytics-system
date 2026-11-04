@@ -1,0 +1,26 @@
+/* ĐỔI MÀU WEBSITE TẠI ĐÂY.
+ * Đổi các giá trị bên phải dấu hai chấm rồi lưu file.
+ * Màu cam/đỏ của cảnh báo và lỗi không phụ thuộc màu thương hiệu.
+ */
+:root {
+  /* Màu chính: nút, logo, menu được chọn */
+  --color-primary: #005baa;
+  --color-primary-hover: #004785;
+
+  /* Các sắc độ phối cùng màu chính */
+  --color-primary-dark: #003366;
+  --color-primary-soft: #edf5fc;
+  --color-primary-border: #c5ddf2;
+  --color-primary-shadow: #005baa18;
+  --color-focus-ring: #dbeafe;
+  --color-accent: #78add8;
+  --color-on-dark: #c5e2fa;
+
+  /* Nền, chữ và đường viền */
+  --color-background: #f5f8fc;
+  --color-surface: #ffffff;
+  --color-text: #24364b;
+  --color-heading: #12345a;
+  --color-text-muted: #738398;
+  --color-border: #e0e7ef;
+}

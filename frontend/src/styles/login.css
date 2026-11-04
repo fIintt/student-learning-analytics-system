@@ -1,0 +1,130 @@
+.login {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 100vh;
+  background: var(--color-surface);
+}
+
+.login-story {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  padding: 46px 60px;
+  color: #ffffff;
+
+  background-color: var(--color-primary-dark);
+  background-image:
+    linear-gradient(to bottom, rgba(0, 34, 68, 0.45), rgba(0, 34, 68, 0.85)),
+    url('/images/neu-campus.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.login-story .brand {
+  padding: 0;
+}
+
+.login-story .brand b span {
+  color: #dbeafe;
+}
+
+.login-story > .brand + div {
+  margin: 50px 0;
+}
+
+.login-story .login-school {
+  color: #dbeafe;
+  font-size: 14px;
+  letter-spacing: normal;
+}
+
+.login-story h1 {
+  margin: 18px 0;
+  color: #ffffff;
+  font-size: 42px;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -1px;
+}
+
+.login-story p {
+  max-width: 380px;
+  color: #e2e8f0;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.login-story > small {
+  color: #cbd5e1;
+  font-size: 11px;
+}
+.login-form {
+  padding: 50px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.login-form-inner {
+  max-width: 365px;
+  width: 100%;
+  margin: auto;
+}
+.login-form h2 {
+  margin-bottom: 28px;
+  font-size: 26px;
+  font-weight: 650;
+  letter-spacing: -0.8px;
+}
+.role-tabs {
+  display: flex;
+  background: #f6f8f4;
+  border: 1px solid #edf1e9;
+  padding: 4px;
+  border-radius: 7px;
+  margin-bottom: 24px;
+}
+.role-tabs button {
+  flex: 1;
+  border: 0;
+  background: none;
+  color: #96a38f;
+  padding: 9px 4px;
+  font-size: 13px;
+  border-radius: 5px;
+}
+.role-tabs .selected {
+  background: var(--color-surface);
+  box-shadow: 0 1px 5px #24462c0d;
+  color: #496b45;
+}
+.login-form input {
+  padding: 12px;
+  font-size: 14px;
+}
+.login-submit {
+  width: 100%;
+  justify-content: space-between;
+  margin-top: 5px;
+  padding: 13px 15px;
+}
+.form-error {
+  font-size: 13px;
+  color: #bd7474;
+  margin: 10px 0;
+}
+.login form label {
+  color: #6a7d60;
+}
+
+.login-help {
+  margin-top: 18px;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+.login-help p {
+  margin-top: 10px;
+  line-height: 1.6;
+}
