@@ -59,10 +59,38 @@ def load_programs(conn: psycopg.Connection, rows: pl.DataFrame) -> int:
         cursor.executemany(
             """
             INSERT INTO programs
-                (program_id, program_name_vi, program_name_en, major_code,
-                 program_type, first_cohort_year, last_cohort_year)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
-            ON CONFLICT (program_id) DO NOTHING
+                (program_id, 
+                 program_name_vi, 
+                 program_name_en, 
+                 major_code,
+                 program_type, 
+                 first_cohort_year, 
+                 last_cohort_year)
+            VALUES 
+                (%s, %s, %s, %s, %s, %s, %s)
+            ON CONFLICT 
+                (program_id)
+            DO UPDATE
+            SET program_name_vi   = EXCLUDED.program_name_vi,
+                program_name_en   = EXCLUDED.program_name_en,
+                major_code        = EXCLUDED.major_code,
+                program_type      = EXCLUDED.program_type,
+                first_cohort_year = EXCLUDED.first_cohort_year,
+                last_cohort_year  = EXCLUDED.last_cohort_year
+            WHERE
+                (programs.program_name_vi, 
+                 programs.program_name_en, 
+                 programs.major_code,
+                 programs.program_type, 
+                 programs.first_cohort_year, 
+                 programs.last_cohort_year)
+            IS DISTINCT FROM
+                (EXCLUDED.program_name_vi,
+                 EXCLUDED.program_name_en,
+                 EXCLUDED.major_code,
+                 EXCLUDED.program_type,
+                 EXCLUDED.first_cohort_year,
+                 EXCLUDED.last_cohort_year)
             """,
             records,
         )
@@ -78,10 +106,30 @@ def load_students(conn: psycopg.Connection, rows: pl.DataFrame) -> int:
         cursor.executemany(
             """
             INSERT INTO students 
-                (student_id, name, program_id, cohort, academic_status)
+                (student_id, 
+                 name, 
+                 program_id, 
+                 cohort, 
+                 academic_status)
             VALUES 
                 (%s, %s, %s, %s, %s)
-            ON CONFLICT (student_id) DO NOTHING
+            ON CONFLICT 
+                (student_id) 
+            DO UPDATE 
+            SET name            = EXCLUDED.name,
+                program_id      = EXCLUDED.program_id,
+                cohort          = EXCLUDED.cohort,
+                academic_status = EXCLUDED.academic_status
+            WHERE 
+                (students.name, 
+                 students.program_id, 
+                 students.cohort, 
+                 students.academic_status)
+            IS DISTINCT FROM
+                (EXCLUDED.name, 
+                 EXCLUDED.program_id, 
+                 EXCLUDED.cohort, 
+                 EXCLUDED.academic_status)
             """,
             records,
         )
@@ -107,10 +155,30 @@ def load_academic_performance(conn: psycopg.Connection, rows: pl.DataFrame) -> i
         cursor.executemany(
             """
             INSERT INTO academic_performance 
-                (student_id, academic_year, semester, registered_credits, passed_credits, failed_credits, semester_gpa, cumulative_gpa)
+                (student_id, academic_year, semester, registered_credits, 
+                 passed_credits, failed_credits, semester_gpa, cumulative_gpa)
             VALUES 
                 (%s, %s, %s, %s, %s, %s, %s, %s)
-            ON CONFLICT (student_id, academic_year, semester) DO NOTHING
+            ON CONFLICT 
+                (student_id, academic_year, semester) 
+            DO UPDATE 
+            SET registered_credits = EXCLUDED.registered_credits,
+                passed_credits     = EXCLUDED.passed_credits,
+                failed_credits     = EXCLUDED.failed_credits,
+                semester_gpa       = EXCLUDED.semester_gpa,
+                cumulative_gpa     = EXCLUDED.cumulative_gpa
+            WHERE 
+                (academic_performance.registered_credits,
+                 academic_performance.passed_credits,
+                 academic_performance.failed_credits,
+                 academic_performance.semester_gpa,
+                 academic_performance.cumulative_gpa)
+            IS DISTINCT FROM
+                (EXCLUDED.registered_credits,
+                 EXCLUDED.passed_credits,
+                 EXCLUDED.failed_credits,
+                 EXCLUDED.semester_gpa,
+                 EXCLUDED.cumulative_gpa)
             """,
             records,
         )
@@ -130,7 +198,23 @@ def load_staff(conn: psycopg.Connection, rows: pl.DataFrame) -> int:
                 (staff_id, name, email, department, type)
             VALUES 
                 (%s, %s, %s, %s, %s)
-            ON CONFLICT (staff_id) DO NOTHING
+            ON CONFLICT 
+                (staff_id)
+            DO UPDATE
+            SET name = EXCLUDED.name,
+                email = EXCLUDED.email,
+                department = EXCLUDED.department,
+                type = EXCLUDED.type
+            WHERE 
+                (staff.name, 
+                 staff.email, 
+                 staff.department, 
+                 staff.type)
+            IS DISTINCT FROM
+                (EXCLUDED.name, 
+                 EXCLUDED.email, 
+                 EXCLUDED.department, 
+                 EXCLUDED.type)
             """,
             records,
         )
@@ -157,9 +241,25 @@ def load_accounts(conn: psycopg.Connection, rows: pl.DataFrame) -> int:
         cursor.executemany(
             """
             INSERT INTO accounts
-                (account_id, username, password_hash, role, student_id, staff_id)
-            VALUES (%s, %s, %s, %s, %s, NULL)
-            ON CONFLICT (student_id) DO NOTHING
+                (account_id, 
+                 username, 
+                 password_hash, 
+                 role, 
+                 student_id, 
+                 staff_id)
+            VALUES 
+                (%s, %s, %s, %s, %s, NULL)
+            ON CONFLICT 
+                (student_id)
+            DO UPDATE
+            SET username = EXCLUDED.username,
+                password_hash = EXCLUDED.password_hash
+            WHERE
+                (accounts.username, 
+                 accounts.password_hash)
+            IS DISTINCT FROM
+                (EXCLUDED.username, 
+                 EXCLUDED.password_hash)
             """,
             student_records,
         )
@@ -169,9 +269,28 @@ def load_accounts(conn: psycopg.Connection, rows: pl.DataFrame) -> int:
         cursor.executemany(
             """
             INSERT INTO accounts
-                (account_id, username, password_hash, role, student_id, staff_id)
-            VALUES (%s, %s, %s, %s, NULL, %s)
-            ON CONFLICT (staff_id) DO NOTHING
+                (account_id, 
+                username, 
+                password_hash, 
+                role, 
+                student_id,
+                staff_id)
+            VALUES 
+                (%s, %s, %s, %s, NULL, %s)
+            ON CONFLICT 
+                (staff_id)
+            DO UPDATE
+            SET username = EXCLUDED.username,
+                password_hash = EXCLUDED.password_hash,
+                role = EXCLUDED.role
+            WHERE
+                (accounts.username, 
+                 accounts.password_hash, 
+                 accounts.role)
+            IS DISTINCT FROM
+                (EXCLUDED.username, 
+                 EXCLUDED.password_hash, 
+                 EXCLUDED.role)
             """,
             staff_records,
         )
