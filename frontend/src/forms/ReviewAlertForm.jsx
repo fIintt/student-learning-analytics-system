@@ -16,6 +16,9 @@ export default function ReviewAlertForm({
           {findMetric(modal.item.metric)?.name}: <b>{formatNumber(modal.item.value)}</b> ·
           v{modal.item.version} · {modal.item.term}
         </p>
+        <p>
+          Điều kiện cảnh báo: {modal.item.operator} {modal.item.threshold}
+        </p>
       </div>
       <label>
         Kết quả rà soát

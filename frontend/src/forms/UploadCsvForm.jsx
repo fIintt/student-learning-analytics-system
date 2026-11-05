@@ -2,8 +2,8 @@ export default function UploadCsvForm({ handleUploadCsv }) {
   return (
     <form onSubmit={handleUploadCsv}>
       <p>
-        Nhập kết quả học kỳ cho sinh viên đã có trong hệ thống. Dữ liệu cũ không bị ghi
-        đè.
+        Nhập kết quả học kỳ cho sinh viên đã có trong hệ thống. Dòng trùng mã sinh viên,
+        năm học và học kỳ có thể cập nhật điểm, tín chỉ cũ sau khi bạn xác nhận.
       </p>
       <details className="reference-details">
         <summary>Cấu trúc CSV</summary>

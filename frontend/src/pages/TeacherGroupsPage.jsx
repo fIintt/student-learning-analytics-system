@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { allPages } from '../services/api';
 import DataTable from '../components/DataTable';
 
-export default function TeacherGroupsPage({ api, token, groups, preview, groupsError }) {
+export default function TeacherGroupsPage({ api, token, groups, groupsError }) {
   const [teachers, setTeachers] = useState([]);
   const [selected, setSelected] = useState(null);
   const [ids, setIds] = useState([]);
@@ -20,7 +20,6 @@ export default function TeacherGroupsPage({ api, token, groups, preview, groupsE
     searchRef.current?.focus({ preventScroll: true });
   }, [selected]);
   useEffect(() => {
-    if (preview) return;
     const controller = new AbortController();
     setBusy(true);
     setError('');
@@ -38,7 +37,7 @@ export default function TeacherGroupsPage({ api, token, groups, preview, groupsE
         if (!controller.signal.aborted) setBusy(false);
       });
     return () => controller.abort();
-  }, [token, preview, reload]);
+  }, [token, reload]);
   async function save(event) {
     event.preventDefault();
     if (busy || groupsError) return;
@@ -60,7 +59,6 @@ export default function TeacherGroupsPage({ api, token, groups, preview, groupsE
       setBusy(false);
     }
   }
-  if (preview) return <p>Cần đăng nhập backend để tải và phân nhóm giáo viên.</p>;
   return (
     <section className="panel">
       <div className="panel-head">

@@ -8,9 +8,9 @@ export default function ImportDetail({ modal, confirmImport }) {
         <b>{job.filename}</b> · <StatusBadge status={job.status} />
       </p>
       <p>
-        Tổng: {job.total_rows} · Mới: {job.new_rows} · Trùng: {job.duplicated_rows} ·
-        Không đổi: {job.unchanged_rows} · Bị loại: {job.rejected_rows} · Đã nhập:{' '}
-        {job.inserted_rows}
+        Tổng: {job.total_rows} · Mới: {job.new_rows} · Trùng: {job.duplicated_rows} · Cập
+        nhật: {job.updated_rows ?? 0} · Không đổi: {job.unchanged_rows} · Bị loại:{' '}
+        {job.rejected_rows} · Đã nhập: {job.inserted_rows}
       </p>
       {job.error_message && (
         <p className="form-error" role="alert">
@@ -19,16 +19,17 @@ export default function ImportDetail({ modal, confirmImport }) {
       )}
       {job.status === 'ready' && (
         <button className="button" onClick={() => confirmImport(job.id)}>
-          Xác nhận nhập các dòng mới hợp lệ
+          Xác nhận thêm mới / cập nhật các dòng hợp lệ
         </button>
       )}
       {['processing', 'importing'].includes(job.status) && (
         <p role="status">Đang xử lý, trạng thái sẽ tự cập nhật…</p>
       )}
-      <h3>Xem trước dòng mới (tối đa 20)</h3>
+      <h3>Xem trước dòng thêm mới / cập nhật (tối đa 20)</h3>
       <DataTable
         rows={job.preview_rows || []}
         columns={[
+          ['Thao tác', (r) => (r.disposition === 'update' ? 'Cập nhật' : 'Thêm mới')],
           ['Mã SV', (r) => r.student_id],
           ['Năm học', (r) => r.academic_year],
           ['Kỳ', (r) => r.semester],

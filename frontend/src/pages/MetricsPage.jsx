@@ -37,12 +37,14 @@ export default function MetricsPage({
             >
               Sửa
             </button>
-            <button
-              className="button small"
-              onClick={() => changeMetricStatus(metric, 'submitted')}
-            >
-              Gửi duyệt
-            </button>
+            {metric.status === 'draft' && (
+              <button
+                className="button small"
+                onClick={() => changeMetricStatus(metric, 'submitted')}
+              >
+                Gửi duyệt
+              </button>
+            )}
           </>
         )}
         {role === 'admin' && metric.status === 'submitted' && (

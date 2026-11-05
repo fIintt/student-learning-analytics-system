@@ -39,7 +39,10 @@ export default function AlertTable({
               <td>{findMetric(alert.metric)?.name}</td>
               <td>
                 <b className="danger-text">{formatNumber(alert.value)}</b>
-                <span className="muted"> / {alert.threshold}</span>
+                <span className="muted">
+                  {' '}
+                  · Điều kiện: {alert.operator} {alert.threshold}
+                </span>
               </td>
               <td>
                 <StatusBadge status={alert.status} />

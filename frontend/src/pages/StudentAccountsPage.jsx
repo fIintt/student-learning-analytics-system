@@ -1,3 +1,4 @@
+import PasswordInput from '../components/PasswordInput';
 import { useEffect, useState } from 'react';
 import { allPages } from '../services/api';
 import DataTable from '../components/DataTable';
@@ -139,8 +140,7 @@ export default function StudentAccountsPage({ api, token, students }) {
             {['create', 'reset'].includes(form.type) && (
               <label>
                 Mật khẩu tạm
-                <input
-                  type="password"
+                <PasswordInput
                   name="password"
                   minLength={8}
                   maxLength={72}

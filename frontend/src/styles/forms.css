@@ -142,3 +142,34 @@ label {
   color: #bfd4c5;
   padding: 0;
 }
+
+/* Nút hiện/ẩn nằm trong ô, không gửi form khi bấm. */
+.password-input {
+  position: relative;
+  display: block;
+  width: 100%;
+}
+.password-input > input[id] {
+  width: 100%;
+  padding-right: 48px;
+}
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 5px;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--color-text-muted);
+}
+.password-toggle:hover {
+  color: var(--color-primary);
+}
+

@@ -1,9 +1,10 @@
+import PasswordInput from '../components/PasswordInput';
 import { createSession } from '../services/session';
 // Màn hình đăng nhập qua API. Đọc file này trước để hiểu state, form và sự kiện.
 import { useState } from 'react';
 import { request } from '../services/api';
 import { ArrowRight } from 'lucide-react';
-export default function Login({ onLogin, onPreview }) {
+export default function Login({ onLogin }) {
   const [busy, setBusy] = useState(false);
   async function handleLogin(event) {
     event.preventDefault();
@@ -61,12 +62,7 @@ export default function Login({ onLogin, onPreview }) {
             </label>
             <label>
               Mật khẩu
-              <input
-                type="password"
-                name="password"
-                autoComplete="current-password"
-                required
-              />
+              <PasswordInput name="password" autoComplete="current-password" required />
             </label>
             {error && (
               <p className="form-error" role="alert">
@@ -77,16 +73,6 @@ export default function Login({ onLogin, onPreview }) {
               {busy ? 'Đang đăng nhập…' : 'Đăng nhập'} <ArrowRight size={17} />
             </button>
           </form>
-          {import.meta.env.DEV && (
-            <button
-              type="button"
-              className="button secondary login-submit"
-              disabled={busy}
-              onClick={onPreview}
-            >
-              Vào xem giao diện (bỏ qua đăng nhập)
-            </button>
-          )}
         </div>
       </section>
     </div>

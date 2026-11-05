@@ -25,7 +25,6 @@ export default function App() {
   const [accountsVersion, setAccountsVersion] = useState(0);
   const {
     session,
-    enterPreview,
     setSession,
     database,
     setDatabase,
@@ -88,10 +87,9 @@ export default function App() {
       groups={groups}
     />
   );
-  if (!session?.preview && !isSessionValid(session)) {
+  if (!isSessionValid(session)) {
     return (
       <Login
-        onPreview={enterPreview}
         onLogin={(newSession) => {
           setSession(newSession);
           navigateToPage('overview');
@@ -127,7 +125,6 @@ export default function App() {
       />
       <div className="main-shell">
         <Topbar
-          preview={session.preview}
           setIsMenuOpen={setIsMenuOpen}
           isMenuOpen={isMenuOpen}
           activePage={activePage}
@@ -146,15 +143,6 @@ export default function App() {
                 )
                 .join('; ')}
               . Các phần khác vẫn dùng được.
-            </div>
-          )}
-          {session.preview && (
-            <div className="notice" role="status">
-              Đang xem giao diện tạm. Chưa có dữ liệu hoặc token backend; các thao tác lưu
-              cần đăng nhập thật.
-              <button className="text-button" onClick={() => setSession(null)}>
-                Về đăng nhập
-              </button>
             </div>
           )}
           <div className="api-status">
@@ -240,21 +228,16 @@ export default function App() {
                 api={api}
                 token={session.token}
                 groups={database.groups}
-                preview={session.preview}
                 groupsError={loadErrors.groups}
               />
             )}
             {currentPage === 'accounts' && role === 'admin' && (
               <AccountSyncPanel
                 api={api}
-                preview={session.preview}
                 onSynced={() => setAccountsVersion((n) => n + 1)}
               />
             )}
-            {currentPage === 'accounts' && session.preview && (
-              <p>Cần đăng nhập backend để tải và quản lý tài khoản sinh viên.</p>
-            )}
-            {currentPage === 'accounts' && role === 'admin' && !session.preview && (
+            {currentPage === 'accounts' && role === 'admin' && (
               <StudentAccountsPage
                 key={accountsVersion}
                 api={api}

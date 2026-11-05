@@ -1,3 +1,4 @@
+import PasswordInput from '../components/PasswordInput';
 import { useState } from 'react';
 
 export default function ChangePasswordForm({ api, onChanged }) {
@@ -29,18 +30,18 @@ export default function ChangePasswordForm({ api, onChanged }) {
     <form onSubmit={submit}>
       <label>
         Mật khẩu hiện tại
-        <input
+        <PasswordInput
           name="current_password"
-          type="password"
+
           autoComplete="current-password"
           required
         />
       </label>
       <label>
         Mật khẩu mới
-        <input
+        <PasswordInput
           name="password"
-          type="password"
+
           minLength={8}
           maxLength={72}
           autoComplete="new-password"
@@ -49,7 +50,7 @@ export default function ChangePasswordForm({ api, onChanged }) {
       </label>
       <label>
         Nhập lại mật khẩu mới
-        <input name="confirm" type="password" autoComplete="new-password" required />
+        <PasswordInput name="confirm" autoComplete="new-password" required />
       </label>
       {error && (
         <p role="alert" className="form-error">
