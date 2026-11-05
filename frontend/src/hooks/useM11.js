@@ -12,6 +12,7 @@ import {
 } from '../services/backendData';
 import { navigationItems } from '../config/navigation';
 import downloadCsv from '../utils/downloadCsv';
+import { reportRows } from '../utils/dashboardData';
 
 const emptyDatabase = () => ({
   students: [],
@@ -25,10 +26,7 @@ const emptyDatabase = () => ({
 });
 
 export default function useM11() {
-  const [savedSession, saveSession] = useLocalStorage('m11-api-session', null);
-  // Phiên xem giao diện chỉ ở bộ nhớ, không tạo token hoặc đổi phiên API đã lưu.
-  const [previewSession, setPreviewSession] = useState(null);
-  const session = previewSession || savedSession;
+  const [session, saveSession] = useLocalStorage('m11-api-session', null);
   const [database, setDatabase] = useState(emptyDatabase);
   const [currentPage, setCurrentPage] = useState('overview');
   const [selectedStudentId, setSelectedStudentId] = useState(null);
@@ -40,6 +38,9 @@ export default function useM11() {
   const [notification, setNotification] = useState('');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [loadErrors, setLoadErrors] = useState({});
+  const [pollRetry, setPollRetry] = useState(0);
+  const latestModal = useRef(modal);
+  latestModal.current = modal;
   const [loading, setLoading] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -53,20 +54,7 @@ export default function useM11() {
   function showNotification(text) {
     setNotification(text);
   }
-  function enterPreview() {
-    setPreviewSession({
-      preview: true,
-      role: 'admin',
-      email: 'Chưa đăng nhập API',
-    });
-    setDatabase(emptyDatabase());
-    setError('');
-    setLoadErrors({});
-    setLoading(false);
-    setCurrentPage('overview');
-  }
   function setSession(value) {
-    setPreviewSession(null);
     modalVersion.current++;
     currentToken.current = value?.token;
     saveSession(value);
@@ -84,19 +72,14 @@ export default function useM11() {
     setCurrentPage('overview');
   }
   function onError(err) {
-    if (session?.preview) return showNotification(err.message);
     if (err.status === 401) setSession(null);
     setError(err.message);
   }
   async function api(path, options = {}) {
-    if (session?.preview)
-      throw new Error(
-        'Cần đăng nhập backend thật để dùng chức năng này. Bạn vẫn có thể xem và chỉnh giao diện.',
-      );
     try {
       return await request(path, { token: session?.token, ...options });
     } catch (err) {
-      if (err.status === 401) setSession(null);
+      if (err.status === 401 && currentToken.current === session?.token) setSession(null);
       throw err;
     }
   }
@@ -109,7 +92,7 @@ export default function useM11() {
   }
 
   async function refresh(signal) {
-    if (!session?.token || session.preview) return;
+    if (!session?.token) return;
     setLoading(true);
     setError('');
     const options = { token: session.token, signal };
@@ -160,14 +143,16 @@ export default function useM11() {
         cases: cases.map(caseFromApi),
         batches,
       });
+      return true;
     } catch (err) {
       if (err.name !== 'AbortError' && !signal?.aborted) onError(err);
+      return false;
     } finally {
       if (!signal?.aborted) setLoading(false);
     }
   }
   useEffect(() => {
-    if (!session?.token || session.preview) return;
+    if (!session?.token) return;
     if (!isSessionValid(session)) {
       setSession(null);
       return;
@@ -237,36 +222,67 @@ export default function useM11() {
       if (modalVersion.current === version)
         saveModal({ ...value, ...extra, loading: false });
     } catch (err) {
-      if (modalVersion.current === version)
+      if (modalVersion.current === version && currentToken.current === session?.token) {
         saveModal({ ...value, loading: false, error: err.message });
-      onError(err);
+        onError(err);
+      }
     }
   }
 
-  // Import chạy nền: chỉ poll các job còn đang chạy, không tự confirm/compute.
+  // Poll chỉ thuộc phiên đã gửi request; hoàn tất nhập không tự tính chỉ số.
   useEffect(() => {
-    const running = database.batches.some((job) =>
+    const runningJobs = database.batches.filter((job) =>
       ['processing', 'importing'].includes(job.status),
     );
-    if (!running || !session?.token) return;
+    const token = session?.token;
+    if (!runningJobs.length || !token) return;
+    const controller = new AbortController();
+    const isCurrent = () => !controller.signal.aborted && currentToken.current === token;
     const timer = setTimeout(async () => {
       try {
         const batches = await allPages('/academic-imports', {
-          token: session.token,
+          token,
+          signal: controller.signal,
         });
-        setDatabase((old) => ({ ...old, batches }));
+        if (!isCurrent()) return;
+        setLoadErrors((old) => {
+          const { batches: previousError, ...remaining } = old;
+          return remaining;
+        });
+        const opened = latestModal.current;
         if (
-          modal?.type === 'batch' &&
-          ['processing', 'importing'].includes(modal.item.status)
-        )
-          setModal(modal);
+          opened?.type === 'batch' &&
+          ['processing', 'importing'].includes(opened.item.status)
+        ) {
+          await setModal(opened);
+        }
+        if (!isCurrent()) return;
+        const completed = batches.some(
+          (job) =>
+            job.status === 'completed' &&
+            runningJobs.some((previous) => previous.id === job.id),
+        );
+        if (completed) {
+          const refreshed = await refresh(controller.signal);
+          if (!refreshed && isCurrent()) setPollRetry((attempt) => attempt + 1);
+        } else {
+          setDatabase((old) => ({ ...old, batches }));
+        }
       } catch (err) {
+        if (!isCurrent() || err.name === 'AbortError') return;
         if (err.status === 401) onError(err);
-        else setLoadErrors((old) => ({ ...old, batches: err.message }));
+        else {
+          setLoadErrors((old) => ({ ...old, batches: err.message }));
+          // Vẫn thử lại sau lỗi mạng, thay vì dừng polling vĩnh viễn.
+          setPollRetry((attempt) => attempt + 1);
+        }
       }
     }, 2000);
-    return () => clearTimeout(timer);
-  }, [database.batches, session?.token, modal?.item?.status]);
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [database.batches, session?.token, pollRetry]);
 
   const accessibleStudents = database.students;
   const filteredStudents = accessibleStudents.filter(
@@ -434,24 +450,18 @@ export default function useM11() {
   function handleExportReport() {
     if (['students', 'alerts', 'cases'].some((key) => loadErrors[key]))
       return showNotification('Chưa tải đủ dữ liệu để xuất báo cáo. Hãy tải lại.');
-    downloadCsv('m11-bao-cao.csv', [
-      ['Mã sinh viên', 'Họ tên', 'Chương trình', 'Khóa', 'Cảnh báo', 'Hồ sơ hỗ trợ'],
-      ...filteredStudents.map((student) => [
-        student.id,
-        student.name,
-        student.program,
-        student.cohort,
-        alerts.filter((item) => item.student === student.id).length,
-        cases.filter((item) => item.student === student.id).length,
-      ]),
-    ]);
+    const isDashboard = currentPage === 'overview';
+    downloadCsv(
+      isDashboard ? 'm11-tong-quan.csv' : 'm11-sinh-vien.csv',
+      reportRows(filteredStudents, alerts, cases, isDashboard),
+    );
   }
+
   const groups = database.groups.map((item) => item.name);
   const activePage = navigationItems.find((item) => item[0] === currentPage);
   const selectedStudent = findStudent(selectedStudentId);
   return {
     session,
-    enterPreview,
     setSession,
     database,
     setDatabase,

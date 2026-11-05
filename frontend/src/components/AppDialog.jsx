@@ -111,10 +111,8 @@ export default function AppDialog({
                   ) : (
                     <p>Phạm vi: Chưa được gán nhóm</p>
                   ))}
-                <p hidden={session.preview}>
-                  Hết phiên: {new Date(session.expires).toLocaleString('vi-VN')}
-                </p>
-                <details className="reference-details" hidden={session.preview}>
+                <p>Hết phiên: {new Date(session.expires).toLocaleString('vi-VN')}</p>
+                <details className="reference-details">
                   <summary>Đổi mật khẩu</summary>
                   <ChangePasswordForm api={api} onChanged={() => setSession(null)} />
                 </details>
@@ -182,6 +180,9 @@ export default function AppDialog({
                 <p>
                   Giá trị: {formatNumber(modal.item.value)} · Phiên bản{' '}
                   {modal.item.version}
+                </p>
+                <p>
+                  Điều kiện cảnh báo: {modal.item.operator} {modal.item.threshold}
                 </p>
                 <p>
                   {modal.item.term} · {new Date(modal.item.date).toLocaleString('vi-VN')}

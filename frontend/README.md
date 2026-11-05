@@ -40,11 +40,11 @@ Frontend dùng `package.json` và `package-lock.json` thay cho `requirements.txt
 
 ## Lệnh kiểm tra
 
-| Lệnh                   | Mục đích                                                                         |
-| ---------------------- | -------------------------------------------------------------------------------- |
-| `npm run dev`          | Chạy giao diện khi phát triển                                                    |
-| `npm run build`        | Build vào `dist/`, kiểm tra khả năng biên dịch                                   |
-| `npm run preview`      | Xem bản build local, vẫn cần API riêng                                           |
+| Lệnh              | Mục đích                                       |
+| ----------------- | ---------------------------------------------- |
+| `npm run dev`     | Chạy giao diện khi phát triển                  |
+| `npm run build`   | Build vào `dist/`, kiểm tra khả năng biên dịch |
+| `npm run preview` | Xem bản build local, vẫn cần API riêng         |
 
 Build/test frontend thành công không chứng minh toàn bộ nghiệp vụ backend đã chạy đúng. Khi triển khai, cấu hình API trước khi build và cấu hình backend cho phép origin thực tế của frontend qua CORS. Không dùng `vite preview` làm dịch vụ production.
 
@@ -59,7 +59,7 @@ Build/test frontend thành công không chứng minh toàn bộ nghiệp vụ ba
 
 Một nhóm được backend định nghĩa bằng **chương trình × khóa** (`program_id` + `cohort`). Gán nhóm giáo viên là thay đổi phạm vi quyền, không chuyển sinh viên sang lớp khác. Backend phải thực thi phân quyền; ẩn nút trên frontend không thay thế kiểm tra quyền API.
 
-Trong chế độ phát triển có nút bỏ qua đăng nhập để xem giao diện trống. Chế độ này không tạo token, không nạp dữ liệu demo và không dùng được thao tác ghi API. Tài khoản/dữ liệu kiểm thử từng tạo trong database local không được đóng gói cùng frontend.
+Ứng dụng yêu cầu đăng nhập qua API backend ở cả chế độ phát triển và bản build. Không còn chế độ bỏ qua đăng nhập. Tài khoản/dữ liệu kiểm thử local không được đóng gói cùng frontend.
 
 Frontend lưu token và thông tin phiên ở khóa localStorage `m11-api-session`; sinh viên, điểm, cảnh báo và hồ sơ nghiệp vụ được lấy qua API, không lưu thành database trong localStorage.
 
@@ -97,6 +97,7 @@ Backend tính chỉ số và sinh cảnh báo; frontend chỉ cấu hình/gọi 
 - Chỉ công thức đã duyệt mới được tính; backend hiện chỉ tính cho sinh viên có trạng thái `studying` và có dữ liệu học tập.
 - Mỗi lần tính chọn một công thức. Bộ lọc nhóm/chương trình trên giao diện không được gửi làm phạm vi tính.
 - Frontend gom các phiên bản cùng mã thành một ô; bản đang sửa hiển thị cùng ô, phiên bản cũ thu trong lịch sử. Việc gom không thay đổi vòng đời phiên bản hoặc dữ liệu backend.
+- Công thức bị từ chối phải sửa và lưu lại thành nháp trước khi gửi duyệt.
 - Duyệt công thức không tự tính lại kết quả: cần thao tác **Tính chỉ số** riêng.
 
 Dashboard chỉ thống kê sinh viên `studying`, sau bộ lọc chương trình, nhóm và tên/mã. Cả bốn ô, biểu đồ trạng thái và bảng trên dashboard cùng dùng phạm vi này:
@@ -119,19 +120,19 @@ Thêm followup rồi PATCH hồ sơ là hai request riêng. Nếu POST thành c�
 ### Dữ liệu và CSV — dành cho pipeline
 
 - Pipeline/backend phụ trách kiểm tra, làm sạch và nạp dữ liệu. Frontend không trực tiếp đọc file nguồn vào database.
-- Luồng nhập web dùng template từ API, upload bằng multipart, xem preview/lỗi rồi confirm. Job `processing`/`importing` được poll mỗi 2 giây.
+- Luồng nhập web dùng template từ API, upload bằng multipart, xem preview/lỗi rồi confirm. Job `processing`/`importing` được poll mỗi 2 giây. Polling tự thử lại sau lỗi mạng, xóa lỗi khi phục hồi và bỏ qua phản hồi từ phiên cũ. Khi phát hiện nhập hoàn tất, frontend tải lại các bộ dữ liệu; không tự tính chỉ số.
 - Nhập CSV trên web dành cho kết quả học kỳ của sinh viên có sẵn; không phải tạo mới chương trình/sinh viên.
 - Nhập xong không tự tính chỉ số. Cần gọi tính riêng sau khi backend xác nhận hoàn tất.
 - Khi kiểm thử nhập web, luôn tải template từ API. CSV mẫu cũ trong `samples/` và cấu hình editor `.vscode/` chỉ giữ local, đã được loại khỏi Git.
-- Xuất CSV trên frontend là xuất từ danh sách đã tải/lọc, không phải API xuất báo cáo của backend.
+- Xuất CSV trên frontend là xuất từ danh sách đã tải/lọc, không phải API xuất báo cáo của backend. Xuất tại dashboard chỉ gồm người đang học, đếm cảnh báo chờ và hồ sơ chưa đóng. Xuất tại trang Sinh viên giữ các trạng thái sinh viên và đếm tổng cảnh báo/hồ sơ trong danh sách đã lọc.
 
 ## Vấn đề còn mở và kiểm thử bàn giao
 
-Trạng thái đối chiếu local ngày 04/11/2026, cần kiểm tra lại nếu backend/pipeline có bản mới:
+Trạng thái đối chiếu code ngày 05/11/2026, backend/pipeline trên main tại commit 57e36e2:
 
 1. Khi tính phiên bản công thức mới, backend chưa tự kết thúc cảnh báo chờ của phiên bản cũ cùng mã. Hàng chờ có thể chồng phiên bản; thu hẹp ngưỡng không tự loại cảnh báo cũ. Frontend không tự ẩn hoặc đổi trạng thái để giả lập việc này.
-2. Luồng nhập CSV chưa hoàn chỉnh ở môi trường local đã kiểm tra: thiếu worker nhập học tập; upload từng trả 503. Tải template/xem lịch sử hoạt động không có nghĩa upload/confirm đã hoạt động trọn luồng.
-3. Dữ liệu sinh viên local: CSV nguồn 204 dòng, database 193 người, file rejected 7 dòng. Chênh lệch 4 dòng còn lại chưa được xác minh; không coi số dòng nguồn là số người hợp lệ trong database.
+2. Bản main mới đã có worker CSV và hỗ trợ thêm mới/cập nhật điểm, tín chỉ trùng sinh viên–năm học–học kỳ sau xác nhận. Frontend đã cập nhật thông báo, preview và số dòng cập nhật. Chưa kiểm thử end-to-end với bản backend này; môi trường local cũ từng trả 503 không đại diện cho bản main mới.
+3. Lần kiểm tra dữ liệu nguồn ban đầu: CSV 204 dòng, database sau pipeline 193 người, file rejected 7 dòng. Chênh lệch 4 dòng còn lại chưa được xác minh; không coi số dòng nguồn là số người hợp lệ trong database.
 
 Trước khi thu gọn bản bàn giao đã chạy 13 kiểm thử frontend; từng kiểm tra một số luồng với backend thật/database local. Chưa xác nhận toàn bộ chức năng end-to-end cho mọi vai trò. Khi bàn giao cần kiểm tra:
 

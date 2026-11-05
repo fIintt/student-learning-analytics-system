@@ -28,6 +28,7 @@ export function alertFromApi(item) {
     value: item.metric_result.value,
     version: item.metric_result.metric_version,
     threshold: item.metric_result.threshold?.value,
+    operator: item.metric_result.threshold?.operator,
     status: item.status === 'pending_review' ? 'pending' : item.status,
     note: item.review_note,
     date: item.created_at,

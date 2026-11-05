@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import DataTable from './DataTable';
 
-export default function AccountSyncPanel({ api, preview, onSynced }) {
+export default function AccountSyncPanel({ api, onSynced }) {
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
@@ -23,7 +23,7 @@ export default function AccountSyncPanel({ api, preview, onSynced }) {
     <section className="panel">
       <div className="panel-head">
         <h2>Tài khoản từ pipeline</h2>
-        <button className="button secondary" disabled={busy || preview} onClick={sync}>
+        <button className="button secondary" disabled={busy} onClick={sync}>
           {busy ? 'Đang đồng bộ…' : 'Đồng bộ tài khoản nguồn'}
         </button>
       </div>
