@@ -1,0 +1,13 @@
+fastapi>=0.118.3,<0.119
+uvicorn==0.34.0
+SQLAlchemy>=2.0.44,<2.1
+pydantic>=2.12,<2.13
+pydantic-settings>=2.11,<2.12
+email-validator==2.2.0
+python-multipart==0.0.20
+passlib[bcrypt]==1.7.4
+bcrypt==4.0.1
+PyJWT==2.10.1
+pytest==8.3.4
+httpx==0.28.1
+psycopg[binary]==3.3.6
