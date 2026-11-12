@@ -42,6 +42,7 @@ class AlertStatus(str, enum.Enum):
     PENDING_REVIEW = "pending_review"
     CONFIRMED = "confirmed"
     DISMISSED = "dismissed"
+    SUPERSEDED = "superseded"
 
 
 class CaseStatus(str, enum.Enum):

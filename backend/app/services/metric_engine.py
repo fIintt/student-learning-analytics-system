@@ -25,11 +25,13 @@ from app.models import (
     AcademicStatus,
     Alert,
     AlertStatus,
+    CaseStatus,
     FormulaType,
     MetricDefinition,
     MetricResult,
     MetricStatus,
     Student,
+    SupportCase,
     User,
 )
 from app.services.pagination import PageParams
@@ -123,15 +125,21 @@ def compute(db: Session, user: User, definition_id: int, now: datetime | None = 
                             detail="Chưa có dữ liệu học tập của sinh viên đang học để tính")
 
     done = {}
+    old_result_ids_by_student = defaultdict(list)
+
     for result in db.scalars(select(MetricResult)
                             .where(MetricResult.metric_definition_id == definition.id)
                             .order_by(MetricResult.revision)):
         done[(result.learner_id, result.academic_year, result.semester)] = result
+        old_result_ids_by_student[result.learner_id].append(result.id)
 
     results: list[MetricResult] = []
     skipped = 0
     changed_students = set()
+    learners_with_current_value = set()
+    current_flagged_results = {}
     superseded_ids = []
+    old_term_result_ids = []
     for student_id, terms in sorted(terms_by_student.items()):
         for index, term in enumerate(terms):
             previous = done.get((student_id, term.academic_year, term.semester))
@@ -140,40 +148,131 @@ def compute(db: Session, user: User, definition_id: int, now: datetime | None = 
                 continue
             source_hash = _source_hash(definition, terms[index:])
             if previous is not None and previous.source_hash == source_hash:
+                if index == 0 and previous.value is not None:
+                    learners_with_current_value.add(student_id)
+                    if previous.flagged:
+                        current_flagged_results[student_id] = previous
                 continue
             value = formula(terms[index:], definition.formula_params)
-            results.append(MetricResult(
+            if index == 0 and value is not None:
+                learners_with_current_value.add(student_id)
+                if previous is None:
+                    old_term_result_ids.extend(old_result_ids_by_student[student_id])
+            result = MetricResult(
                 metric_definition_id=definition.id, learner_id=student_id, academic_year=term.academic_year,
                 semester=term.semester, value=value, flagged=is_flagged(value, definition.threshold),
                 computed_at=now, revision=previous.revision + 1 if previous else 1, source_hash=source_hash,
-            ))
+            )
+            results.append(result)
+            if index == 0 and result.flagged:
+                current_flagged_results[student_id] = result
             changed_students.add(student_id)
             if previous is not None:
                 superseded_ids.append(previous.id)
         if student_id not in changed_students:
             skipped += 1
-    if not results:
-        # Tránh sinh cảnh báo trùng cho giáo viên rà soát.
-        raise HTTPException(status.HTTP_409_CONFLICT, detail="Chỉ số này đã được tính trên dữ liệu hiện có")
-
     try:
-        # Chỉ kết thúc cảnh báo chưa rà soát; giữ nguyên quyết định của giáo viên và case.
-        if superseded_ids:
-            note = "Hệ thống: dữ liệu nguồn đã thay đổi; xem kết quả tính lại."
-            dismissed = db.scalars(update(Alert).where(Alert.metric_result_id.in_(superseded_ids),
-                                           Alert.status == AlertStatus.PENDING_REVIEW)
-                       .values(status=AlertStatus.DISMISSED, reviewed_at=now,
-                               review_note=note).returning(Alert.id)).all()
-            for alert_id in dismissed:
-                audit_service.record(db, user, audit_service.ALERT_DISMISS, audit_service.ALERT,
-                                     alert_id, {"note": note, "automatic": True,
-                                                "reason": "source_data_changed"})
+        old_version_result_ids = (
+            select(MetricResult.id)
+            .join(MetricDefinition, MetricDefinition.id == MetricResult.metric_definition_id)
+            .where(MetricDefinition.code == definition.code,
+                   MetricDefinition.version < definition.version,
+                   MetricDefinition.status == MetricStatus.RETIRED,
+                   MetricResult.learner_id.in_(learners_with_current_value))
+        )
         db.add_all(results)
-        db.flush()  # cần id của MetricResult để gắn Alert
+        db.flush()
+
+        old_pending_alerts = []
+        if definition.version > 1 and current_flagged_results:
+            old_pending_alerts = db.execute(
+                select(Alert, MetricResult.academic_year, MetricResult.semester)
+                .join(MetricResult, MetricResult.id == Alert.metric_result_id)
+                .where(Alert.metric_result_id.in_(old_version_result_ids),
+                       Alert.learner_id.in_(current_flagged_results),
+                       Alert.status == AlertStatus.PENDING_REVIEW,
+                       ~Alert.support_case.has())
+                .order_by(Alert.created_at, Alert.id)
+                .with_for_update(of=Alert)
+            ).all()
+
+        flagged_learners = {result.learner_id for result in results if result.flagged}
+        flagged_learners.update(alert.learner_id for alert, _, _ in old_pending_alerts)
+        learners_in_support = set()
+        if flagged_learners:
+            learners_in_support = set(db.scalars(
+                select(SupportCase.learner_id)
+                .join(Alert, Alert.id == SupportCase.alert_id)
+                .join(MetricResult, MetricResult.id == Alert.metric_result_id)
+                .join(MetricDefinition, MetricDefinition.id == MetricResult.metric_definition_id)
+                .where(SupportCase.learner_id.in_(flagged_learners),
+                       SupportCase.status.in_((CaseStatus.OPEN, CaseStatus.IN_PROGRESS)),
+                       MetricDefinition.code == definition.code)
+            ))
+
+        carried_result_ids = set()
+        if old_pending_alerts:
+            occupied_result_ids = set(db.scalars(
+                select(Alert.metric_result_id).where(
+                    Alert.metric_result_id.in_([result.id for result in current_flagged_results.values()])
+                )
+            ))
+            for alert, academic_year, semester in old_pending_alerts:
+                result = current_flagged_results[alert.learner_id]
+                if (result.academic_year, result.semester) != (academic_year, semester):
+                    continue
+                if alert.learner_id in learners_in_support or result.id in occupied_result_ids:
+                    continue
+                audit_service.record(
+                    db, user, audit_service.ALERT_CARRY_FORWARD, audit_service.ALERT, alert.id,
+                    {"old_metric_result_id": alert.metric_result_id, "new_metric_result_id": result.id},
+                )
+                alert.metric_result_id = result.id
+                occupied_result_ids.add(result.id)
+                carried_result_ids.add(result.id)
+            db.flush()
+
+        replaced_count = 0
+        for result_ids, reason, note in (
+            (old_version_result_ids, "new_formula_version",
+             "Hệ thống: đã có kết quả theo phiên bản công thức mới."),
+            (old_term_result_ids, "new_term_result",
+             "Hệ thống: đã có kết quả học kỳ mới."),
+            (superseded_ids, "source_data_changed",
+             "Hệ thống: dữ liệu nguồn đã thay đổi; xem kết quả tính lại."),
+        ):
+            if isinstance(result_ids, list) and not result_ids:
+                continue
+            replaced_alert_ids = db.scalars(
+                update(Alert)
+                .where(
+                    Alert.metric_result_id.in_(result_ids),
+                    Alert.status == AlertStatus.PENDING_REVIEW,
+                    ~Alert.support_case.has(),
+                )
+                .values(
+                    status=AlertStatus.SUPERSEDED,
+                    reviewed_at=now,
+                    review_note=note,
+                )
+                .returning(Alert.id)
+            ).all()
+            replaced_count += len(replaced_alert_ids)
+            for alert_id in replaced_alert_ids:
+                audit_service.record(
+                    db, user, audit_service.ALERT_SUPERSEDE, audit_service.ALERT,
+                    alert_id,
+                    {"note": note, "automatic": True, "reason": reason},
+                )
+
+        if not results and not replaced_count and not carried_result_ids:
+            raise HTTPException(status.HTTP_409_CONFLICT,
+                                detail="Chỉ số này đã được tính trên dữ liệu hiện có")
 
         alerts = [Alert(metric_result_id=r.id, learner_id=r.learner_id, status=AlertStatus.PENDING_REVIEW,
                         created_at=now)
-                  for r in results if r.flagged]
+                  for r in results if r.flagged and r.learner_id not in learners_in_support
+                  and r.id not in carried_result_ids]
         db.add_all(alerts)
         db.commit()
     except Exception:

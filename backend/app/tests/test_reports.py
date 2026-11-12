@@ -62,7 +62,7 @@ def test_learner_report(client, world, auth, scenario):
         (2.2, "2025-2026", 1), (1.5, "2024-2025", 2)]
     assert (metrics["FAILED"]["latest_value"], metrics["FAILED"]["flagged"]) == (0.2857, True)
 
-    assert body["alerts"] == {"pending_review": 1, "confirmed": 1, "dismissed": 0}
+    assert body["alerts"] == {"pending_review": 0, "confirmed": 1, "dismissed": 0, "superseded": 1}
     assert body["support_cases"] == [{
         "id": scenario["case"]["id"], "status": "open", "reason": "Cần hỗ trợ",
         "created_at": scenario["case"]["created_at"], "followup_count": 1, "latest_result_status": "improved",
@@ -72,7 +72,7 @@ def test_learner_report(client, world, auth, scenario):
 def test_learner_report_without_data(client, db, world, auth):
     res = client.get(f"{REPORTS}/learner/HS001", headers=auth["reviewer"]).json()
     assert res["metrics"] == [] and res["support_cases"] == []
-    assert res["alerts"] == {"pending_review": 0, "confirmed": 0, "dismissed": 0}
+    assert res["alerts"] == {"pending_review": 0, "confirmed": 0, "dismissed": 0, "superseded": 0}
 
 
 def test_learner_report_permissions(client, world, auth):
@@ -102,7 +102,7 @@ def test_group_report(client, world, auth, scenario):
     assert (metrics["FAILED"]["avg_value"], metrics["FAILED"]["flagged_count"],
             metrics["FAILED"]["flagged_ratio"]) == (0.14, 1, 0.5)
 
-    assert body["alerts"] == {"pending_review": 1, "confirmed": 1, "dismissed": 0}
+    assert body["alerts"] == {"pending_review": 0, "confirmed": 1, "dismissed": 0, "superseded": 1}
     assert body["support_cases"] == {"open": 1, "in_progress": 0, "closed": 0}
     assert body["followups"] == {"unknown": 0, "improved": 1, "no_change": 0, "worsened": 0}
     assert body["learners_needing_support"] == [{
@@ -113,7 +113,7 @@ def test_group_report(client, world, auth, scenario):
 def test_group_report_other_group_only_counts_its_learners(client, world, auth, scenario):
     body = client.get(f"{REPORTS}/group/{world['group_b'].id}", headers=auth["admin"]).json()
     assert body["learner_count"] == 2
-    assert body["alerts"] == {"pending_review": 0, "confirmed": 0, "dismissed": 1}
+    assert body["alerts"] == {"pending_review": 0, "confirmed": 0, "dismissed": 1, "superseded": 0}
     assert [l["id"] for l in body["learners_needing_support"]] == ["HS003"]
 
 
@@ -132,11 +132,11 @@ def test_program_report_scoped_to_viewer_groups(client, world, auth, scenario):
     admin = client.get(url, headers=auth["admin"]).json()
     assert admin["scope"] == {"type": "program", "id": "P1", "name": "Chương trình 1"}
     assert admin["learner_count"] == 4
-    assert admin["alerts"] == {"pending_review": 1, "confirmed": 1, "dismissed": 1}
+    assert admin["alerts"] == {"pending_review": 0, "confirmed": 1, "dismissed": 1, "superseded": 1}
 
     viewer = client.get(url, headers=auth["reviewer"]).json()
     assert viewer["learner_count"] == 2          # chỉ sinh viên thuộc nhóm A
-    assert viewer["alerts"] == {"pending_review": 1, "confirmed": 1, "dismissed": 0}
+    assert viewer["alerts"] == {"pending_review": 0, "confirmed": 1, "dismissed": 0, "superseded": 1}
     assert {l["id"] for l in viewer["learners_needing_support"]} == {"HS001"}
 
 

@@ -20,6 +20,7 @@ export default function AlertsPage({
           ['pending', 'Chờ rà soát'],
           ['confirmed', 'Đã xác nhận'],
           ['dismissed', 'Đã bác'],
+          ['superseded', 'Đã được thay thế'],
         ].map(([value, title]) => (
           <button
             key={value}

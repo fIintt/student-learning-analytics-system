@@ -13,6 +13,8 @@ METRIC_APPROVE = "metric.approve"
 METRIC_REJECT = "metric.reject"
 ALERT_CONFIRM = "alert.confirm"
 ALERT_DISMISS = "alert.dismiss"
+ALERT_SUPERSEDE = "alert.supersede"
+ALERT_CARRY_FORWARD = "alert.carry_forward"
 CASE_CREATE = "case.create"
 
 # entity_type

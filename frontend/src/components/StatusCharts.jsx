@@ -5,6 +5,7 @@ const alertStates = [
   ['pending', 'Chờ rà soát', '#bb8a50'],
   ['confirmed', 'Đã xác nhận', 'var(--color-primary)'],
   ['dismissed', 'Đã bác', '#a8b3bf'],
+  ['superseded', 'Đã được thay thế', '#7e8a9c'],
 ];
 const caseStates = [
   ['open', 'Mở', 'var(--color-primary)'],
