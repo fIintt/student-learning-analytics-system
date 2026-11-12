@@ -6,6 +6,10 @@ export default function StudentsPage({
   filteredStudents,
   openStudent,
 }) {
+  // Sắp trên bản sao để không đổi thứ tự dữ liệu dùng ở các màn hình khác.
+  const sortedStudents = [...filteredStudents].sort(
+    (a, b) => Number(b.status === 'studying') - Number(a.status === 'studying'),
+  );
   return (
     <>
       {studentFilters}
@@ -19,7 +23,7 @@ export default function StudentsPage({
         <StudentTable
           openStudent={openStudent}
           database={database}
-          list={filteredStudents}
+          list={sortedStudents}
         />
       </section>
     </>
