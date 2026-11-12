@@ -105,13 +105,14 @@ def _mark_reviewed(db: Session, alert: Alert, user: User, new_status: AlertStatu
     now = datetime.now(timezone.utc).replace(tzinfo=None)
     result = db.execute(
         update(Alert)
-        .where(Alert.id == alert.id, Alert.status == AlertStatus.PENDING_REVIEW)
+        .where(Alert.id == alert.id, Alert.status == AlertStatus.PENDING_REVIEW,
+               Alert.metric_result_id == alert.metric_result_id)
         .values(status=new_status, reviewer_id=user.id, review_note=note, reviewed_at=now)
         .execution_options(synchronize_session=False)
     )
     if result.rowcount != 1:
         db.rollback()
-        raise HTTPException(status.HTTP_409_CONFLICT, detail="Cảnh báo đã được xử lý")
+        raise HTTPException(status.HTTP_409_CONFLICT, detail="Cảnh báo đã thay đổi, vui lòng tải lại")
     return now
 
 

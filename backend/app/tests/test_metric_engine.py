@@ -145,6 +145,11 @@ def test_recompute_after_new_term_only_computes_new_data(client, db, world, auth
     rows = db.scalars(select(MetricResult).where(MetricResult.learner_id == "HS001")
                       .order_by(MetricResult.id)).all()
     assert [(r.academic_year, r.semester, r.value) for r in rows] == [("2025-2026", 1, 1.0), ("2025-2026", 2, 1.2)]
+    alerts = db.scalars(select(Alert).where(Alert.learner_id == "HS001").order_by(Alert.id)).all()
+    assert [(a.metric_result_id, a.status) for a in alerts] == [
+        (rows[0].id, AlertStatus.SUPERSEDED),
+        (rows[1].id, AlertStatus.PENDING_REVIEW),
+    ]
 
 
 @pytest.mark.parametrize("value,op,limit,expected", [
@@ -168,6 +173,47 @@ def test_old_version_stays_traceable(client, db, world, auth):
     res = client.get("/api/v1/metrics/results", headers=auth["admin"]).json()
     assert [(i["metric_version"], i["flagged"], i["academic_year"], i["semester"]) for i in res["items"]] == [
         (2, False, "2025-2026", 1), (1, True, "2025-2026", 1)]
+    alert = db.scalar(select(Alert))
+    assert alert.status == AlertStatus.SUPERSEDED
+
+    # Mô phỏng phiên bản mới đã được tính trước khi có chức năng thay thế cảnh báo.
+    alert.status = AlertStatus.PENDING_REVIEW
+    db.commit()
+    response = _compute(client, auth, v2.id)
+    assert response.status_code == 201
+    assert response.json()["learners_computed"] == 0
+    db.refresh(alert)
+    assert alert.status == AlertStatus.SUPERSEDED
+    assert _compute(client, auth, v2.id).status_code == 409
+
+
+def test_new_version_avoids_alert_for_existing_support_case(client, db, world, auth, alerts):
+    original = alerts[0]
+    response = client.post(f"/api/v1/review/alerts/{original.id}/confirm",
+                           json={"note": "Đã rà soát", "reason": "Cần hỗ trợ"}, headers=auth["admin"])
+    assert response.status_code == 201
+    case_id = response.json()["support_case"]["id"]
+    original.metric_result.metric_definition.status = MetricStatus.RETIRED
+    v2 = make_definition(db, world["admin"], version=2, threshold={"operator": "<", "value": 1.6})
+
+    response = _compute(client, auth, v2.id)
+    assert response.status_code == 201
+    assert response.json()["flagged"] == 4
+    assert response.json()["alerts_created"] == 0
+    new_results = _results(db, v2.id)
+    for pending in alerts[1:]:
+        db.refresh(pending)
+        assert pending.status == AlertStatus.PENDING_REVIEW
+        assert pending.metric_result_id == new_results[pending.learner_id].id
+        log = db.scalar(select(AuditLog).where(
+            AuditLog.entity_id == pending.id, AuditLog.action == "alert.carry_forward"
+        ))
+        assert log.detail["new_metric_result_id"] == pending.metric_result_id
+    assert db.query(Alert).count() == len(alerts)
+    db.refresh(original)
+    assert original.status == AlertStatus.CONFIRMED
+    assert db.get(SupportCase, case_id).alert_id == original.id
+    assert list(db.scalars(select(Alert.id).where(Alert.learner_id == original.learner_id))) == [original.id]
 
 
 # --- GET /metrics/results theo phạm vi nhóm ---------------------------------------------
@@ -212,11 +258,11 @@ def test_source_correction_creates_revision_and_reconciles_alerts(client, db, wo
     assert rows[0].id == old_id
     if old_gpa < 2:
         old_alert = db.scalar(select(Alert).where(Alert.metric_result_id == old_id))
-        assert old_alert.status == AlertStatus.DISMISSED
+        assert old_alert.status == AlertStatus.SUPERSEDED
         assert old_alert.reviewer_id is None
         assert "dữ liệu nguồn" in old_alert.review_note
         log = db.scalar(select(AuditLog).where(AuditLog.entity_id == old_alert.id,
-                                               AuditLog.action == "alert.dismiss"))
+                                               AuditLog.action == "alert.supersede"))
         assert log.detail["automatic"] is True
     report = client.get("/api/v1/reports/learner/HS001", headers=auth["admin"]).json()
     assert report["metrics"][0]["latest_value"] == new_gpa
@@ -241,7 +287,7 @@ def test_correction_preserves_confirmed_case_and_followup(client, db, world, aut
     assert followup.status_code == 201
     db.get(AcademicPerformance, ("HS001", "2025-2026", 1)).cumulative_gpa = new_gpa
     db.commit()
-    assert _compute(client, auth, definition.id).json()["alerts_created"] == int(new_gpa < 2)
+    assert _compute(client, auth, definition.id).json()["alerts_created"] == 0
     db.expire_all()
     assert db.get(Alert, alert.id).status == AlertStatus.CONFIRMED
     case = db.get(SupportCase, case_id)

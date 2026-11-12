@@ -95,6 +95,7 @@ td small {
 }
 .badge.closed,
 .badge.dismissed,
+.badge.superseded,
 .badge.retired {
   background: #f0f2f0;
   color: #929d93;

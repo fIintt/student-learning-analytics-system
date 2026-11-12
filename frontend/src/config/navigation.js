@@ -26,6 +26,7 @@ export const statusLabels = {
   failed: 'Thất bại',
   confirmed: 'Đã xác nhận',
   dismissed: 'Đã bác',
+  superseded: 'Đã được thay thế',
   open: 'Mở',
   in_progress: 'Đang xử lý',
   closed: 'Đã đóng',
